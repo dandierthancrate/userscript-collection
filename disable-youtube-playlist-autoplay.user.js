@@ -4,7 +4,7 @@
 // @match        https://www.youtube.com/*
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-idle
-// @version      1.0.8
+// @version      1.0.9
 // @author       Antigravity
 // @description  Stops video at end, prevents playlist auto-advance
 // @license      GPL-3.0-or-later
