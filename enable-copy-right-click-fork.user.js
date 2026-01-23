@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Enable Copy & Right Click Fork
 // @namespace    https://greasyfork.org/en/scripts/23772-absolute-enable-right-click-copy
-// @version      1.9.1
+// @version      1.9.2
 // @description  Force enable right click, copy, paste, and text selection (whitelist mode)
 // @author       Antigravity
 // @match        *://*/*
@@ -10,7 +10,8 @@
 // @grant        GM_getValue
 // @run-at       document-start
 // @license      GPL-3.0-or-later
-// // ==/UserScript==
+// ==/UserScript==
+/* global GM_registerMenuCommand, GM_setValue, GM_getValue */
 
 (() => {
     'use strict';
