@@ -40,6 +40,7 @@ A curated collection of lean, high-performance userscripts designed to enhance y
 | :--- | :--- | :--- |
 | **Grok Rate Limit Display Fork** | Shows remaining queries and cooldowns on grok.com. | [View](./grok-rate-limit-display-fork.user.js) |
 | **Enable Copy & Right Click Fork** | Force enables right-click, selection, and copy on restricted sites. | [View](./enable-copy-right-click-fork.user.js) |
+| **Share Archive** | Archives pages to archive.today with ClearURLs integration and tracking removal. | [View](./share-archive.user.js) |
 
 ---
 

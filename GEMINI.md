@@ -20,6 +20,7 @@ Each file is a standalone script.
 | `disable-youtube-playlist-autoplay.user.js` | Stops video playback at the end of a video to prevent playlist auto-advance. |
 | `fix-missing-spotify-lyrics-fork.user.js` | Fetches missing lyrics from external sources for Spotify. |
 | `grok-rate-limit-display-fork.user.js` | Displays rate limits on grok.com. |
+| `share-archive.user.js` | **Utility:** Archives pages to archive.today with ClearURLs integration, platform-specific optimizations, and tracking param removal. |
 | `README.md` | User-facing documentation and installation links. |
 
 ## 💻 Development Conventions
