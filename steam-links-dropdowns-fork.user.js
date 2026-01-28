@@ -39,7 +39,7 @@
         { name: 'ElAmigos', url: 'https://elamigos.site/' },
         { name: 'FitGirl Repacks', url: 'https://fitgirl-repacks.site/?s={q}' },
         { header: 'NSFW' },
-        { name: 'F95Zone', url: 'https://f95zone.to/search/?q={q}&c[container_only]=1&o=relevance' },
+        { name: 'F95Zone', url: 'https://f95zone.to/search/?q={q}&c[title_only]=1&o=relevance' },
         { name: 'Kimochi', url: 'https://kimochi.info/?s={q}' },
         { name: 'FapForFun', url: 'https://fapforfun.net/?s={q}' },
         { name: 'Eroge Download', url: 'https://erogedownload.com/?s={q}' },
