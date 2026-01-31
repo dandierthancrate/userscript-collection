@@ -1,16 +1,28 @@
 // ==UserScript==
 // @name         Grok Rate Limit Display Fork
 // @namespace    https://greasyfork.org/en/scripts/558017-grok-rate-limit-display
-// @version      1.1.1
+// @version      1.1.4
 // @description  Displays remaining queries and cooldowns on grok.com.
 // @author       Antigravity, KHROTU, ported from Blankspeaker & CursedAtom
 // @match        https://grok.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=grok.com
+// @grant        GM_addStyle
 // @license      GPL-3.0-or-later
 // ==/UserScript==
 
 (function () {
   'use strict';
+
+  // Inject CSS to prevent text overlap with the rate limit pill
+  GM_addStyle(`
+    .query-bar div[contenteditable="true"],
+    .query-bar textarea[aria-label*="Ask Grok"] {
+      padding-right: 110px !important;
+    }
+    #grok-rate-limit {
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+  `);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CONFIGURATION & CONSTANTS
@@ -213,8 +225,7 @@
   class RateLimitUI {
     constructor() {
       this.container = null;
-      this.timers = { countdown: null, overlap: null };
-      this.isHidden = false;
+      this.timers = { countdown: null };
     }
 
     getOrCreate(queryBar) {
@@ -347,24 +358,6 @@
 
     stopCountdown() { clearInterval(this.timers.countdown); }
 
-    checkOverlap(queryBar) {
-      if (!this.container) return;
-      const input = queryBar.querySelector(CONFIG.SELECTORS.input);
-      if (!input) return;
-
-      const len = (input.value || input.textContent || '').trim().length;
-      const space = queryBar.offsetWidth - this.container.offsetWidth - 100;
-      const isSmall = window.innerWidth < 900 || space < 200;
-      const hide = len > (isSmall ? 0 : 28);
-
-      if (hide && !this.isHidden) {
-        Object.assign(this.container.style, { transform: 'translateX(100%)', opacity: '0' });
-        this.isHidden = true;
-      } else if (!hide && this.isHidden) {
-        Object.assign(this.container.style, { transform: 'translateX(0)', opacity: '0.8' });
-        this.isHidden = false;
-      }
-    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -415,18 +408,11 @@
       this.observers.model = new MutationObserver(debouncedUpdate);
       this.observers.model.observe(queryBar, { childList: true, subtree: true, attributes: true, characterData: true });
 
-      // Input listeners
+      // Input listener for submit
       const input = queryBar.querySelector(CONFIG.SELECTORS.input);
       if (input) {
-        const check = Utils.debounce(() => this.ui.checkOverlap(queryBar), 300);
-        input.addEventListener('input', check);
-        input.addEventListener('focus', check);
-        input.addEventListener('blur', () => setTimeout(check, 200));
         input.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && setTimeout(() => this.update(true), 3000));
       }
-      
-      // Resize listener
-      window.addEventListener('resize', Utils.debounce(() => this.ui.checkOverlap(queryBar), 300));
     },
 
     checkGrok3() {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.17.3
+// @version      2.18.1
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -724,6 +724,9 @@ EXAMPLES:
                     saveCache();
                     if (state.currentContainer) scanContainer(state.currentContainer);
                     updateStatus("Done", false);
+                } else {
+                    // Empty result (rate limited, JSON error, etc.) - re-queue batch for retry
+                    batch.forEach(item => state.queue.unshift(item));
                 }
             } else {
                 batch.forEach(item => state.queue.unshift(item));
@@ -784,33 +787,45 @@ EXAMPLES:
         });
     }
 
-    function handleApiError(res, resolve) {
-        let msg = 'Unknown Error';
-        try { msg = JSON.parse(res.responseText)?.error?.message || msg; } catch { }
-        
-        if (res.status === 400 || res.status === 422) {
-            console.error(`[LLM] ${res.status}:`, msg);
-            updateStatus(`Error ${res.status}: ${msg.slice(0, 50)}`, true, true);
-            resolve({});
-        } else if (res.status === 401 || res.status === 403) {
-            updateStatus(`Error ${res.status}: Invalid API Key`, true, true);
-            resolve({ error: "FATAL_CONFIG_ERROR" });
-        } else if (res.status === 404) {
-            updateStatus(`Error 404: Model/URL not found`, true, true);
-            resolve({ error: "FATAL_CONFIG_ERROR" });
-        } else if (res.status === 429) {
-            updateStatus("Error 429: Rate Limited", true, true);
-            state.lastRequestTimestamp = Date.now() + 60000;
-            resolve({});
-        } else if (res.status >= 500) {
-            updateStatus(`Error ${res.status}: Server Issue`, true, true);
-            state.lastRequestTimestamp = Date.now() + 5000;
-            resolve({});
-        } else {
-            console.error(`[LLM] Error ${res.status}:`, msg);
-            updateStatus(`Error ${res.status}: ${msg.slice(0, 30)}`, true, true);
-            resolve({});
+    // Error code configurations: { fallbackMsg, backoffMs, isFatal, shouldLog }
+    const ERROR_CONFIG = {
+        400: { fallbackMsg: 'Bad Request', shouldLog: true },
+        401: { fallbackMsg: 'Invalid API Key', isFatal: true },
+        403: { fallbackMsg: 'Permission Denied', isFatal: true },
+        404: { fallbackMsg: 'Model Not Found', isFatal: true },
+        408: { fallbackMsg: 'Request Timeout', backoffMs: 3000 },
+        413: { fallbackMsg: 'Request Too Large', shouldLog: true },
+        422: { fallbackMsg: 'Unprocessable', shouldLog: true },
+        429: { fallbackMsg: 'Rate Limited', backoffMs: 60000 },
+        498: { fallbackMsg: 'Capacity Exceeded', backoffMs: 30000 },
+        500: { fallbackMsg: 'Server Error', backoffMs: 10000 },
+        502: { fallbackMsg: 'Bad Gateway', backoffMs: 5000 },
+        503: { fallbackMsg: 'Service Unavailable', backoffMs: 15000 }
+    };
+
+    function parseErrorMessage(res) {
+        try {
+            const body = JSON.parse(res.responseText);
+            return body?.error?.message || body?.message || body?.error || body?.detail
+                || (typeof body === 'string' ? body : null);
+        } catch {
+            return res.responseText?.length < 100 ? res.responseText : null;
         }
+    }
+
+    function handleApiError(res, resolve) {
+        const code = res.status;
+        const msg = parseErrorMessage(res) || 'Unknown Error';
+        const config = ERROR_CONFIG[code] || (code >= 500 ? { fallbackMsg: 'Server Error', backoffMs: 5000 } : {});
+        
+        const displayMsg = (msg.slice(0, 40) || config.fallbackMsg || 'Error').trim();
+        
+        if (config.shouldLog) console.error(`[LLM] ${code}:`, msg);
+        updateStatus(`${code}: ${displayMsg}`, true, true);
+        
+        if (config.backoffMs) state.lastRequestTimestamp = Date.now() + config.backoffMs;
+        
+        resolve(config.isFatal ? { error: "FATAL_CONFIG_ERROR" } : {});
     }
 
     function processLyricElement(element) {
