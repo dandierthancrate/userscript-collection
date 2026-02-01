@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.19.0
+// @version      2.19.4
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -74,12 +74,15 @@ CORE RULES:
 1. JSON ONLY: Return raw JSON. No markdown, no <think> tags, no commentary.
 2. SKIP: Output "SKIP" for instrumental markers (♪) or lines already in English.
 3. NO PERIODS: Do not end translated lines with periods unless the original line does.
-4. PRESERVE SYMBOLS: Copy all unique symbols, brackets, punctuations, emojis, and notes (♪) from the original line directly into the translation.
-5. STYLE MATCH: Ensure the translation mirrors the original's tone (questioning, introspective, deprecating, self-talk, etc).
-6. FLOW: Ensure translation flows grammatically towards the surrounding lines without taking excessive liberties.
-7. NO ABBREVIATIONS: Use full words in the translation. No "Q&A" or text-speak.
-8. CAPITALIZATION: Only capitalize the start of the translated line if grammatically appropriate.
-9. PROPER NOUNS: Keep names in their romanized form (e.g., "Yuki", "Jihoon", "Xiaoming"), do not translate.
+4. 1:1 MAPPING: You MUST output exactly one translation for every ID provided. Do not merge lines. Do not skip lines. If a line is untranslatable, output "SKIP".
+5. LEAVE SYMBOLS UNTOUCHED: Keep any shape and position of symbol from the original line intact in the translation.
+6. STYLE MATCH: Ensure the translation mirrors the original's tone (questioning, introspective, deprecating, self-talk, etc).
+7. FLOW: Ensure translation flows grammatically towards the surrounding lines.
+8. NATURAL PHRASING: Translate into natural, spoken English. Avoid stiff, dictionary-literal phrasing. Rephrase awkward sentence structures to sound native, but do not change the underlying meaning.
+9. ENGLISH ONLY: Output MUST be in English. Do not mix Japanese/Korean/Chinese characters into the English sentence (e.g., "able to吐" is FORBIDDEN).
+10. NO ABBREVIATIONS: Use full words in the translation. No "Q&A" or text-speak.
+11. CAPITALIZATION: Only capitalize the start of the translated line if grammatically appropriate.
+12. PROPER NOUNS: Keep names in their romanized form (e.g., "Yuki", "Jihoon", "Xiaoming"). DO NOT "correct" intentional puns or name-plays into common English idioms (e.g., "Catcher in the Ui" must remain "Ui", not "Rye").
 
 EXAMPLES:
 {"id_1": "僕は君を探している"} → {"id_1": "I'm searching for you"}
