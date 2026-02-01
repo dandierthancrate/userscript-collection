@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.18.3
+// @version      2.19.0
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -115,6 +115,23 @@ EXAMPLES:
 7. CONTEXT: Chinese relies heavily on context for tense/plurality - infer from surrounding lyrics.`
         };
         return SHARED_PREAMBLE + "\n\n" + (RULES[sourceLang] || "");
+    }
+
+    function getCurrentTrackInfo() {
+        // Try now-playing widget first
+        const nowPlaying = document.querySelector('[data-testid="now-playing-widget"]');
+        if (nowPlaying) {
+            const trackLink = nowPlaying.querySelector('[data-testid="context-item-link"]');
+            const artistLinks = nowPlaying.querySelectorAll('[data-testid="context-item-info-subtitles"] a');
+            const title = trackLink?.textContent?.trim() || '';
+            const artists = Array.from(artistLinks).map(a => a.textContent?.trim()).filter(Boolean).join(', ');
+            if (title || artists) return { title, artists };
+        }
+        // Fallback: parse document title (format: "Song - Artist | Spotify")
+        const pageTitle = document.title;
+        const match = pageTitle.match(/^(.+?)\s*[-–—]\s*(.+?)\s*[|·]/);
+        if (match) return { title: match[1].trim(), artists: match[2].trim() };
+        return null;
     }
 
     const PROVIDERS = {
@@ -756,9 +773,17 @@ EXAMPLES:
         const sourceLang = detectBatchLanguage(Object.values(payloadObj));
         const systemPrompt = getPrompt(sourceLang);
         
+        // Build user message with optional track context
+        const trackInfo = getCurrentTrackInfo();
+        let userContent = 'TARGET_LANGUAGE: English\n\n';
+        if (trackInfo && (trackInfo.title || trackInfo.artists)) {
+            userContent += `SONG CONTEXT: "${trackInfo.title}" by ${trackInfo.artists}\n\n`;
+        }
+        userContent += `<LYRICS_TO_TRANSLATE>\n${JSON.stringify(payloadObj)}\n</LYRICS_TO_TRANSLATE>`;
+        
         const requestPayload = {
             model: state.model,
-            messages: [{ role: "system", content: systemPrompt }, { role: "user", content: `TARGET_LANGUAGE: English\n\n<LYRICS_TO_TRANSLATE>\n${JSON.stringify(payloadObj)}\n</LYRICS_TO_TRANSLATE>` }],
+            messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userContent }],
             temperature: state.temperature,
             top_p: state.topP,
             stream: false
