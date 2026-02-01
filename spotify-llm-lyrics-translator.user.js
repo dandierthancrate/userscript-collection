@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.18.1
+// @version      2.18.3
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -216,6 +216,11 @@ EXAMPLES:
         if (!storedModel) warnings.push('Model not set');
         const warningMsg = warnings.length > 0 ? `\n⚠️ ${warnings.join(', ')}. Set via menu.` : '';
         alert(`Switched to ${provider.name}!${warningMsg}`);
+        
+        // Clear cache when switching providers
+        state.runtimeCache.clear();
+        Storage.clearRuntimeCache();
+        
         location.reload(); // Reload to ensure clean state initialization
     }
 
@@ -818,10 +823,12 @@ EXAMPLES:
         const msg = parseErrorMessage(res) || 'Unknown Error';
         const config = ERROR_CONFIG[code] || (code >= 500 ? { fallbackMsg: 'Server Error', backoffMs: 5000 } : {});
         
-        const displayMsg = (msg.slice(0, 40) || config.fallbackMsg || 'Error').trim();
+        // Use short fallback when API message is too long
+        const displayMsg = msg.length > 30 ? config.fallbackMsg : (msg || config.fallbackMsg || 'Error');
         
         if (config.shouldLog) console.error(`[LLM] ${code}:`, msg);
         updateStatus(`${code}: ${displayMsg}`, true, true);
+        setTimeout(() => updateStatus('', false), 3000); // Auto-hide after 3s
         
         if (config.backoffMs) state.lastRequestTimestamp = Date.now() + config.backoffMs;
         
