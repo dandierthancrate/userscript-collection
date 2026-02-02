@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.19.6
+// @version      2.20.1
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -67,53 +67,86 @@
     }
 
     function getPrompt(sourceLang) {
-        const SHARED_PREAMBLE = `You are a professional song lyrics translator specializing in translating Asian languages to English. Return ONLY valid JSON, no markdown or explanation.
-TARGET LANGUAGE: English (always)
-OUTPUT FORMAT: {"id_1": "translated line", "id_2": "SKIP"}
-CORE RULES:
-1. JSON ONLY: Return raw JSON. No markdown, no <think> tags, no commentary.
-2. SKIP: Output "SKIP" for instrumental markers (♪) or lines already in English.
-3. 1:1 MAPPING: You MUST output exactly one translation for every ID provided. Do not merge lines. Do not skip lines. If a line is untranslatable, output "SKIP".
-4. STRICT SYMBOL PRESERVATION: You MUST copy all punctuation and symbols (e.g., 「 」 。 、 ・ ♪ ★) EXACTLY as they appear in the source. Do NOT convert them to English equivalents (e.g., keep 「, do not change to ").
-5. CONTEXTUAL FLOW: Match the original tone. If a sentence continues to the next line, output a partial sentence/fragment that connects grammatically to the next line. Do NOT force a full sentence structure if the source is incomplete.
-6. NATURAL PHRASING: Translate into natural, spoken English. Avoid stiff, dictionary-literal phrasing. Rephrase awkward sentence structures to sound native, but do not change the underlying meaning.
-7. ENGLISH ONLY (TEXT): The translated *words* must be in English. However, you MUST output original Japanese/Korean punctuation/symbols if they exist in the source.
-8. NO ABBREVIATIONS: Use full words in the translation. No "Q&A" or text-speak.
-9. CAPITALIZATION: Only capitalize the start of the translated line if grammatically appropriate.
-10. PROPER NOUNS: Keep names in their romanized form (e.g., "Yuki", "Jihoon", "Xiaoming"). DO NOT "correct" intentional puns or name-plays into common English idioms (e.g., "Catcher in the Ui" must remain "Ui", not "Rye").
+        const SHARED_PREAMBLE = `You are a professional song lyrics translator. Translate Asian languages to English.
 
-EXAMPLES:
-{"id_1": "僕は君を探している"} → {"id_1": "I'm searching for you"}
-{"id_2": "ぱっぱらぱー"} → {"id_2": "pa-pa-ra-pa"} (sound effects: keep as-is)
-{"id_3": "夢の迷路の果て"} → {"id_3": "At the end of the dream's maze"} (abstract: preserve ambiguity)
-{"id_4": "ドキドキしちゃって"} → {"id_4": "My heart is pounding"} (onomatopoeia: translate the feeling)
-{"id_5": "You are KING"} → {"id_5": "SKIP"} (already English)`;
+<OUTPUT_FORMAT>
+Return ONLY raw JSON. Example: {"id_1": "translated line", "id_2": "SKIP"}
+</OUTPUT_FORMAT>
+
+<RULES priority="critical">
+1. OUTPUT: Return raw JSON only. No markdown. No commentary.
+2. MAPPING: Output exactly one translation per input ID. Use "SKIP" for untranslatable lines.
+3. SKIP_WHEN: Line contains ♪ or is already English.
+</RULES>
+
+<RULES priority="formatting">
+4. SYMBOLS: Copy all source punctuation exactly (「」。、・♪★). Keep original symbols.
+5. CAPITALIZATION: Capitalize line starts only when grammatically correct.
+6. ABBREVIATIONS: Use full words. Write "question and answer" not "Q&A".
+</RULES>
+
+<RULES priority="translation">
+7. TONE: Match the original emotional tone and register.
+8. FLOW: Preserve sentence fragments. If source line is incomplete, output incomplete translation.
+9. PHRASING: Use natural spoken English. Rephrase stiff structures. Keep meaning intact.
+10. PROPER_NOUNS: Keep romanized names (Yuki, Jihoon). Preserve intentional wordplay.
+</RULES>
+
+<EXAMPLES>
+INPUT: {"id_1": "僕は君を探している"}
+OUTPUT: {"id_1": "I'm searching for you"}
+
+INPUT: {"id_2": "ぱっぱらぱー"}
+OUTPUT: {"id_2": "pa-pa-ra-pa"}
+NOTE: Sound effects stay as-is.
+
+INPUT: {"id_3": "夢の迷路の果て"}
+OUTPUT: {"id_3": "At the end of the dream's maze"}
+NOTE: Preserve poetic ambiguity.
+
+INPUT: {"id_4": "ドキドキしちゃって"}
+OUTPUT: {"id_4": "My heart is pounding"}
+NOTE: Translate onomatopoeia meaning, not sound.
+
+INPUT: {"id_5": "You are KING"}
+OUTPUT: {"id_5": "SKIP"}
+NOTE: Already English.
+</EXAMPLES>`;
 
         const RULES = {
-            ja: `SOURCE LANGUAGE: Japanese
-1. PARTICLES: Correctly interpret は (topic), が (subject), を (object), に (direction/target), で (means/location).
-2. VERB ENDINGS: Pay attention to conjugation nuances (-たい = want to, -てしまう = regrettably, -ている = ongoing).
-3. HONORIFICS: Preserve character relationships implied by -さん, -くん, -ちゃん, -様 in the translation's tone.
-4. ONOMATOPOEIA: Translate the feeling/meaning of onomatopoeia (ドキドキ = heart pounding), not the sound.
-5. HIDDEN SUBJECTS: Japanese often omits subjects (I/You/We) - identify from context and maintain consistency.
-6. SENTENCE-FINAL PARTICLES: Interpret よ (assertion), ね (seeking agreement), か (question), な (self-reflection).
-7. COMPOUND WORDS: Translate the meaning, not the parts (問答 = "dialogue", NOT "question-answer").`,
-            ko: `SOURCE LANGUAGE: Korean
-1. SPEECH LEVELS: Respect 해요체 (polite) vs 반말 (casual) in translation tone.
-2. PARTICLES: Correctly interpret 은/는 (topic), 이/가 (subject), 을/를 (object), 에/에서 (location).
-3. VERB ENDINGS: Note nuances of -고 싶다 (want to), -아/어 버리다 (completely), -고 있다 (ongoing).
-4. ADDRESS TERMS: Preserve relationships implied by -님, -씨, 오빠, 언니, etc. in the translation's tone.
-5. KONGLISH: Translate Konglish words to natural English (스킬 = "skill", 파이팅 = "fighting spirit").
-6. SENTENCE-FINAL PARTICLES: Interpret 요 (polite), 네 (gentle assertion), 지 (seeking confirmation).
-7. CONTRACTIONS: Understand common spoken forms (뭐 = 무엇, 걔 = 그 아이).`,
-            zh: `SOURCE LANGUAGE: Chinese
-1. MEASURE WORDS: Ignore measure words in translation unless they add meaning.
-2. ASPECT MARKERS: Correctly interpret 了 (completed), 着 (ongoing), 过 (experienced).
-3. CLASSICAL CHINESE: Some lyrics use 文言文 (classical Chinese) - translate the meaning, not word-by-word.
-4. CHENGYU: Translate idioms (成语) by their meaning, not literally (一见钟情 = "love at first sight").
-5. PARTICLES: Interpret 的 (possessive/descriptive), 了 (change of state), 吗 (question), 呢 (continuation).
-6. REDUPLICATION: Understand emotional emphasis from reduplicated words (慢慢 = slowly/gently).
-7. CONTEXT: Chinese relies heavily on context for tense/plurality - infer from surrounding lyrics.`
+            ja: `<SOURCE_LANGUAGE>Japanese</SOURCE_LANGUAGE>
+
+<LANGUAGE_RULES>
+1. PARTICLES: は=topic, が=subject, を=object, に=direction, で=means/location.
+2. VERB_ENDINGS: -たい=want, -てしまう=regrettably, -ている=ongoing.
+3. HONORIFICS: Reflect -さん/-くん/-ちゃん/-様 relationships in tone.
+4. ONOMATOPOEIA: Translate the meaning (ドキドキ→heart pounding).
+5. HIDDEN_SUBJECTS: Infer omitted I/You/We from context. Stay consistent.
+6. FINAL_PARTICLES: よ=assertion, ね=agreement, か=question, な=reflection.
+7. COMPOUNDS: Translate meaning (問答→dialogue, not "question-answer").
+</LANGUAGE_RULES>`,
+            ko: `<SOURCE_LANGUAGE>Korean</SOURCE_LANGUAGE>
+
+<LANGUAGE_RULES>
+1. SPEECH_LEVELS: 해요체=polite, 반말=casual. Reflect in tone.
+2. PARTICLES: 은/는=topic, 이/가=subject, 을/를=object, 에/에서=location.
+3. VERB_ENDINGS: -고 싶다=want, -아/어 버리다=completely, -고 있다=ongoing.
+4. ADDRESS_TERMS: Reflect -님/-씨/오빠/언니 relationships in tone.
+5. KONGLISH: Translate to natural English (스킬→skill, 파이팅→fighting spirit).
+6. FINAL_PARTICLES: 요=polite, 네=gentle, 지=confirmation.
+7. CONTRACTIONS: 뭐=무엇, 걔=그 아이. Understand spoken forms.
+</LANGUAGE_RULES>`,
+            zh: `<SOURCE_LANGUAGE>Chinese</SOURCE_LANGUAGE>
+
+<LANGUAGE_RULES>
+1. MEASURE_WORDS: Omit unless meaningful.
+2. ASPECT_MARKERS: 了=completed, 着=ongoing, 过=experienced.
+3. CLASSICAL: Translate 文言文 by meaning, not word-by-word.
+4. CHENGYU: Translate idiom meaning (一见钟情→love at first sight).
+5. PARTICLES: 的=possessive, 了=state change, 吗=question, 呢=continuation.
+6. REDUPLICATION: 慢慢=slowly/gently. Convey emotional emphasis.
+7. CONTEXT: Infer tense/plurality from surrounding lines.
+</LANGUAGE_RULES>`
         };
         return SHARED_PREAMBLE + "\n\n" + (RULES[sourceLang] || "");
     }
@@ -244,15 +277,13 @@ EXAMPLES:
 
     // --- MENU COMMANDS ---
 
-    // 1. Provider Switching
-    Object.keys(PROVIDERS).forEach(pid => {
-        const isCurrent = getCurrentProvider() === pid;
-        GM_registerMenuCommand(`🔌 Use ${PROVIDERS[pid].name}${isCurrent ? " ✓" : ""}`, () => switchProvider(pid));
-    });
-
-    // 2. Model Configuration
+    // Provider Configuration (Switch, Model, API Key)
     Object.keys(PROVIDERS).forEach(pid => {
         const p = PROVIDERS[pid];
+        const isCurrent = getCurrentProvider() === pid;
+
+        GM_registerMenuCommand(`🔌 Use ${p.name}${isCurrent ? " ✓" : ""}`, () => switchProvider(pid));
+
         GM_registerMenuCommand(`🤖 ${p.name} Model`, () => {
             const current = Storage.get(p.modelStorage) || '';
             const m = prompt(`Enter ${p.name} Model ID:`, current);
@@ -262,11 +293,7 @@ EXAMPLES:
                 alert(`${p.name} Model Saved!`);
             }
         });
-    });
 
-    // 3. API Keys
-    Object.keys(PROVIDERS).forEach(pid => {
-        const p = PROVIDERS[pid];
         GM_registerMenuCommand(`🔑 ${p.name} API Key`, () => {
             const current = Storage.get(p.keyStorage) || '';
             const key = prompt(`Enter ${p.name} API Key:`, current);
