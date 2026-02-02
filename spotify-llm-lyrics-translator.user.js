@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.19.4
+// @version      2.19.6
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -73,16 +73,14 @@ OUTPUT FORMAT: {"id_1": "translated line", "id_2": "SKIP"}
 CORE RULES:
 1. JSON ONLY: Return raw JSON. No markdown, no <think> tags, no commentary.
 2. SKIP: Output "SKIP" for instrumental markers (♪) or lines already in English.
-3. NO PERIODS: Do not end translated lines with periods unless the original line does.
-4. 1:1 MAPPING: You MUST output exactly one translation for every ID provided. Do not merge lines. Do not skip lines. If a line is untranslatable, output "SKIP".
-5. LEAVE SYMBOLS UNTOUCHED: Keep any shape and position of symbol from the original line intact in the translation.
-6. STYLE MATCH: Ensure the translation mirrors the original's tone (questioning, introspective, deprecating, self-talk, etc).
-7. FLOW: Ensure translation flows grammatically towards the surrounding lines.
-8. NATURAL PHRASING: Translate into natural, spoken English. Avoid stiff, dictionary-literal phrasing. Rephrase awkward sentence structures to sound native, but do not change the underlying meaning.
-9. ENGLISH ONLY: Output MUST be in English. Do not mix Japanese/Korean/Chinese characters into the English sentence (e.g., "able to吐" is FORBIDDEN).
-10. NO ABBREVIATIONS: Use full words in the translation. No "Q&A" or text-speak.
-11. CAPITALIZATION: Only capitalize the start of the translated line if grammatically appropriate.
-12. PROPER NOUNS: Keep names in their romanized form (e.g., "Yuki", "Jihoon", "Xiaoming"). DO NOT "correct" intentional puns or name-plays into common English idioms (e.g., "Catcher in the Ui" must remain "Ui", not "Rye").
+3. 1:1 MAPPING: You MUST output exactly one translation for every ID provided. Do not merge lines. Do not skip lines. If a line is untranslatable, output "SKIP".
+4. STRICT SYMBOL PRESERVATION: You MUST copy all punctuation and symbols (e.g., 「 」 。 、 ・ ♪ ★) EXACTLY as they appear in the source. Do NOT convert them to English equivalents (e.g., keep 「, do not change to ").
+5. CONTEXTUAL FLOW: Match the original tone. If a sentence continues to the next line, output a partial sentence/fragment that connects grammatically to the next line. Do NOT force a full sentence structure if the source is incomplete.
+6. NATURAL PHRASING: Translate into natural, spoken English. Avoid stiff, dictionary-literal phrasing. Rephrase awkward sentence structures to sound native, but do not change the underlying meaning.
+7. ENGLISH ONLY (TEXT): The translated *words* must be in English. However, you MUST output original Japanese/Korean punctuation/symbols if they exist in the source.
+8. NO ABBREVIATIONS: Use full words in the translation. No "Q&A" or text-speak.
+9. CAPITALIZATION: Only capitalize the start of the translated line if grammatically appropriate.
+10. PROPER NOUNS: Keep names in their romanized form (e.g., "Yuki", "Jihoon", "Xiaoming"). DO NOT "correct" intentional puns or name-plays into common English idioms (e.g., "Catcher in the Ui" must remain "Ui", not "Rye").
 
 EXAMPLES:
 {"id_1": "僕は君を探している"} → {"id_1": "I'm searching for you"}
@@ -170,7 +168,7 @@ EXAMPLES:
         }
 
         static saveRuntimeCache(cache) {
-             if (cache.size > CONFIG.MAX_CACHE_SIZE) {
+            if (cache.size > CONFIG.MAX_CACHE_SIZE) {
                 const keys = Array.from(cache.keys());
                 const toRemove = keys.slice(0, keys.length - CONFIG.MAX_CACHE_SIZE);
                 toRemove.forEach(k => cache.delete(k));
@@ -222,25 +220,25 @@ EXAMPLES:
         if (!provider) return;
         const storedKey = Storage.get(provider.keyStorage) || '';
         const storedModel = Storage.get(provider.modelStorage) || '';
-        
+
         state.apiUrl = provider.url;
         state.apiKey = storedKey;
         state.model = storedModel;
-        
+
         Storage.set('llm_current_provider', providerId);
         // Note: We don't need to duplicate save api_url/key/model to generic keys anymore, 
         // as state is initialized from provider-specific storage on load.
-        
+
         const warnings = [];
         if (!storedKey) warnings.push('API Key not set');
         if (!storedModel) warnings.push('Model not set');
         const warningMsg = warnings.length > 0 ? `\n⚠️ ${warnings.join(', ')}. Set via menu.` : '';
         alert(`Switched to ${provider.name}!${warningMsg}`);
-        
+
         // Clear cache when switching providers
         state.runtimeCache.clear();
         Storage.clearRuntimeCache();
-        
+
         location.reload(); // Reload to ensure clean state initialization
     }
 
@@ -267,7 +265,7 @@ EXAMPLES:
     });
 
     // 3. API Keys
-     Object.keys(PROVIDERS).forEach(pid => {
+    Object.keys(PROVIDERS).forEach(pid => {
         const p = PROVIDERS[pid];
         GM_registerMenuCommand(`🔑 ${p.name} API Key`, () => {
             const current = Storage.get(p.keyStorage) || '';
@@ -289,17 +287,17 @@ EXAMPLES:
 
     params.forEach(p => {
         GM_registerMenuCommand(`${p.label}: ${state[p.stateKey]}`, () => {
-             const val = prompt(`Enter ${p.label} (${p.min} - ${p.max}):\n\n${p.desc}`, state[p.stateKey]);
-             if (val !== null) {
-                 const num = p.isInt ? parseInt(val, 10) : parseFloat(val);
-                 if (!isNaN(num) && num >= p.min && num <= p.max) {
-                     state[p.stateKey] = num;
-                     Storage.set(p.key, num);
-                     alert(`${p.label} set to ${num}`);
-                 } else {
-                     alert(`Invalid value. Must be between ${p.min} and ${p.max}`);
-                 }
-             }
+            const val = prompt(`Enter ${p.label} (${p.min} - ${p.max}):\n\n${p.desc}`, state[p.stateKey]);
+            if (val !== null) {
+                const num = p.isInt ? parseInt(val, 10) : parseFloat(val);
+                if (!isNaN(num) && num >= p.min && num <= p.max) {
+                    state[p.stateKey] = num;
+                    Storage.set(p.key, num);
+                    alert(`${p.label} set to ${num}`);
+                } else {
+                    alert(`Invalid value. Must be between ${p.min} and ${p.max}`);
+                }
+            }
         });
     });
 
@@ -404,9 +402,9 @@ EXAMPLES:
 
     function applyTranslationToDOM(element, text, translation) {
         if (cleanTextForComparison(text) === cleanTextForComparison(translation)) return;
-        
+
         let existingTrans = element.querySelector(`.${CONFIG.TRANSLATION_CLASS}`);
-        
+
         if (existingTrans) {
             // Update existing translation if changed
             if (existingTrans.textContent === translation) return;
@@ -416,7 +414,7 @@ EXAMPLES:
             const div = document.createElement('div');
             div.className = CONFIG.TRANSLATION_CLASS;
             div.textContent = translation;
-            
+
             const textEl = element.querySelector('.lyrics-lyricsContent-text');
             if (textEl) {
                 // Insert as sibling AFTER the text element - Spotify won't touch siblings!
@@ -425,7 +423,7 @@ EXAMPLES:
                 element.appendChild(div);
             }
         }
-        
+
         element.setAttribute(CONFIG.PROCESSED_ATTR, getStrHash(normalizeCacheKey(text)));
     }
 
@@ -455,13 +453,13 @@ EXAMPLES:
         if (!element || !document.body.contains(element)) return;
         const existingTranslation = element.querySelector(`.${CONFIG.TRANSLATION_CLASS}`);
         if (existingTranslation) return; // Already has translation
-        
+
         const text = getOriginalText(element);
         if (!text) return;
         const cacheKey = normalizeCacheKey(text);
         const translation = state.runtimeCache.get(cacheKey);
         if (!translation || translation === '__SKIP__') return;
-        
+
         // Translation is cached but missing from DOM - re-add it
         applyTranslationToDOM(element, text, translation);
     }
@@ -470,11 +468,11 @@ EXAMPLES:
         state.mutationObserver = new MutationObserver((mutations) => {
             // Collect all affected lyric lines to ensure translations
             const affectedLines = new Set();
-            
+
             for (const mutation of mutations) {
                 let target = mutation.target;
                 if (target.nodeType === 3) target = target.parentElement;
-                
+
                 if (target && target.nodeType === 1) {
                     // Check if target itself is a lyric line
                     if (isLyricLine(target)) {
@@ -483,13 +481,13 @@ EXAMPLES:
                         const line = target.closest(LYRIC_SELECTOR);
                         if (line) affectedLines.add(line);
                     }
-                    
+
                     // Also check if target contains lyric lines
                     if (target.querySelectorAll) {
                         target.querySelectorAll(LYRIC_SELECTOR).forEach(line => affectedLines.add(line));
                     }
                 }
-                
+
                 // Handle added nodes
                 if (mutation.addedNodes.length > 0) {
                     for (const node of mutation.addedNodes) {
@@ -503,13 +501,13 @@ EXAMPLES:
                     }
                 }
             }
-            
+
             // Ensure translations on all affected lines
             affectedLines.forEach(line => {
                 attemptRender(line);
                 ensureTranslation(line);
             });
-            
+
             // Throttled full container scan
             if (!state.observerTimeout && state.currentContainer) {
                 state.observerTimeout = setTimeout(() => {
@@ -775,7 +773,7 @@ EXAMPLES:
 
         const sourceLang = detectBatchLanguage(Object.values(payloadObj));
         const systemPrompt = getPrompt(sourceLang);
-        
+
         // Build user message with optional track context
         const trackInfo = getCurrentTrackInfo();
         let userContent = 'TARGET_LANGUAGE: English\n\n';
@@ -783,7 +781,7 @@ EXAMPLES:
             userContent += `SONG CONTEXT: "${trackInfo.title}" by ${trackInfo.artists}\n\n`;
         }
         userContent += `<LYRICS_TO_TRANSLATE>\n${JSON.stringify(payloadObj)}\n</LYRICS_TO_TRANSLATE>`;
-        
+
         const requestPayload = {
             model: state.model,
             messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userContent }],
@@ -805,7 +803,7 @@ EXAMPLES:
                             let raw = JSON.parse(res.responseText).choices[0].message.content.trim();
                             const jsonMatch = raw.match(/\{[\s\S]*\}/);
                             if (jsonMatch) raw = jsonMatch[0];
-                            try { resolve(JSON.parse(raw)); } 
+                            try { resolve(JSON.parse(raw)); }
                             catch { resolve(JSON.parse(repairBrokenJson(raw))); }
                         } catch {
                             updateStatus("JSON Error: Retrying...", true, true);
@@ -850,16 +848,16 @@ EXAMPLES:
         const code = res.status;
         const msg = parseErrorMessage(res) || 'Unknown Error';
         const config = ERROR_CONFIG[code] || (code >= 500 ? { fallbackMsg: 'Server Error', backoffMs: 5000 } : {});
-        
+
         // Use short fallback when API message is too long
         const displayMsg = msg.length > 30 ? config.fallbackMsg : (msg || config.fallbackMsg || 'Error');
-        
+
         if (config.shouldLog) console.error(`[LLM] ${code}:`, msg);
         updateStatus(`${code}: ${displayMsg}`, true, true);
         setTimeout(() => updateStatus('', false), 3000); // Auto-hide after 3s
-        
+
         if (config.backoffMs) state.lastRequestTimestamp = Date.now() + config.backoffMs;
-        
+
         resolve(config.isFatal ? { error: "FATAL_CONFIG_ERROR" } : {});
     }
 
