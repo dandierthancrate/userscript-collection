@@ -128,10 +128,6 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
 }
 
 let currentPage, hotkeyListener, mbElmLis, mbHandled, mbLastHref;
-if (/mangabaka\.(dev|org)/.test(location.href)) {
-  mbHandled = new Set();
-  mbLastHref = location.href;
-}
 
 const SITES = [
     {
@@ -338,6 +334,7 @@ const SITES = [
         name: 'MangaBaka',
         match: /mangabaka\.(dev|org)/,
         run: async (domain) => {
+            if (!mbHandled) { mbHandled = new Set(); mbLastHref = location.href; }
             const cardType = !/^\d+$/.test(location.pathname.slice(1));
             const cat = setCategory(settings.category_setting, 'manga');
             
@@ -372,7 +369,6 @@ function handleMB(detail, cardType, cat) {
     const titleJap = (detail.series?.romanized_title || detail.series?.title || '').trim();
     const titleEng = (detail.series?.title || '').trim();
 
-    // Fix: Ensure mbHandled is initialized if it doesn't exist (though it should be)
     if (!mbHandled) mbHandled = new Set();
     if (mbHandled.has(`${detail.element_id}|${titleJap}`)) return;
     mbHandled.add(`${detail.element_id}|${titleJap}`);
