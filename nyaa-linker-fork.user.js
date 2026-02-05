@@ -513,38 +513,55 @@ function getBaseTitle(baseTitle) {
   return baseTitle;
 }
 
-const awaitLoadOf = (selector, loadType, input) =>
-  new Promise(resolve => {
-    const matchSelector = () => {
-      const root = input instanceof Element ? input : document;
+const awaitLoadOf = (() => {
+  let observer = null;
+  const listeners = new Set();
 
-      if (loadType === 'text') {
-        const elms = document.querySelectorAll(selector);
-        for (const elm of elms) if (elm.textContent.includes(input)) return elm;
-      } else if (loadType === 'count') {
-        if (!root) return null;
-        const elms = root.querySelectorAll(selector);
-        if (elms.length >= (root.childElementCount || 1)) return Array.from(elms);
-      } else if (loadType === 'container') {
-        const elm = document.querySelector(selector);
-        if (elm && elm.childElementCount >= 1) return elm;
+  function check() {
+    for (const listener of listeners) {
+      const result = listener.match();
+      if (result) {
+        listener.resolve(result);
+        listeners.delete(listener);
       }
-      return null;
-    };
+    }
+    if (listeners.size === 0 && observer) {
+      observer.disconnect();
+      observer = null;
+    }
+  }
 
-    const initialMatch = matchSelector();
-    if (initialMatch) return resolve(initialMatch);
+  return (selector, loadType, input) =>
+    new Promise(resolve => {
+      const matchSelector = () => {
+        const root = input instanceof Element ? input : document;
 
-    const mutObs = new MutationObserver(() => {
-      const elm = matchSelector();
-      if (elm) {
-        mutObs.disconnect();
-        resolve(elm);
+        if (loadType === 'text') {
+          const elms = document.querySelectorAll(selector);
+          for (const elm of elms) if (elm.textContent.includes(input)) return elm;
+        } else if (loadType === 'count') {
+          if (!root) return null;
+          const elms = root.querySelectorAll(selector);
+          if (elms.length >= (root.childElementCount || 1)) return Array.from(elms);
+        } else if (loadType === 'container') {
+          const elm = document.querySelector(selector);
+          if (elm && elm.childElementCount >= 1) return elm;
+        }
+        return null;
+      };
+
+      const initialMatch = matchSelector();
+      if (initialMatch) return resolve(initialMatch);
+
+      const listener = { match: matchSelector, resolve };
+      listeners.add(listener);
+
+      if (!observer) {
+        observer = new MutationObserver(check);
+        observer.observe(document.body, { childList: true, subtree: true });
       }
     });
-
-    mutObs.observe(document.body, { childList: true, subtree: true });
-  });
+})();
 
 settings = Storage.load();
 currentPage = window.location.href.split('/')[4];
