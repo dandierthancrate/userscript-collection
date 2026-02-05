@@ -405,7 +405,13 @@
         this.checkGrok3();
       }, 300);
       
-      this.observers.model = new MutationObserver(debouncedUpdate);
+      this.observers.model = new MutationObserver((mutations) => {
+        const shouldUpdate = mutations.some(m => {
+          const target = m.target.nodeType === 3 ? m.target.parentElement : m.target;
+          return !target.closest(CONFIG.SELECTORS.input);
+        });
+        if (shouldUpdate) debouncedUpdate();
+      });
       this.observers.model.observe(queryBar, { childList: true, subtree: true, attributes: true, characterData: true });
 
       // Input listener for submit
