@@ -920,39 +920,11 @@ NOTE: Already English.
         }
     }
 
-    // Fast check using requestAnimationFrame - makes flicker imperceptible
-    // Only checks lines in viewport for performance
-    function ensureVisibleTranslationsLoop() {
-        if (!document.hidden) {
-            const viewTop = 0;
-            const viewBottom = window.innerHeight;
-            const lines = document.querySelectorAll(LYRIC_SELECTOR);
-            for (const line of lines) {
-                const rect = line.getBoundingClientRect();
-                // Only check lines actually visible (tighter check for performance)
-                if (rect.bottom < viewTop - 100 || rect.top > viewBottom + 100) continue;
-                // Check if translation should exist but doesn't
-                const existingTrans = line.querySelector(`.${CONFIG.TRANSLATION_CLASS}`);
-                if (existingTrans) continue;
-                const text = getOriginalText(line);
-                if (!text) continue;
-                const cacheKey = normalizeCacheKey(text);
-                const translation = state.runtimeCache.get(cacheKey);
-                if (translation && translation !== '__SKIP__') {
-                    // Translation is cached but missing - re-add immediately
-                    applyTranslationToDOM(line, text, translation);
-                }
-            }
-        }
-        requestAnimationFrame(ensureVisibleTranslationsLoop);
-    }
 
     window.addEventListener('load', () => {
         console.log(`[LLM Translator] v${GM_info.script.version}`);
         setupObservers();
         scheduleObserverCheck();
-        // Start fast translation check loop
-        requestAnimationFrame(ensureVisibleTranslationsLoop);
     });
 
 })();
