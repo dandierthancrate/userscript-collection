@@ -37,7 +37,8 @@
 
     const LYRIC_SELECTOR = '[data-testid="lyrics-line"], [data-testid="fullscreen-lyric"], .lyrics-lyricsContent-lyric, .lyrics-lyricsContainer-LyricsLine';
 
-    // Language Detection Patterns
+    // Language Detection Patterns - Combined for performance
+    const ASIAN_REGEX = /[\u3040-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]/;
     const HIRAGANA = /[\u3040-\u309F]/;
     const KATAKANA = /[\u30A0-\u30FF]/;
     const CJK_UNIFIED = /[\u4E00-\u9FFF]/;
@@ -46,12 +47,13 @@
     function needsTranslation(line) {
         if (!line || line.trim().length === 0) return false;
         if (line.includes('♪') || line.includes('🎵')) return false;
-        return HIRAGANA.test(line) || KATAKANA.test(line) || CJK_UNIFIED.test(line) || HANGUL.test(line);
+        return ASIAN_REGEX.test(line);
     }
 
     function detectBatchLanguage(lines) {
         let ja = 0, ko = 0, zh = 0;
         for (const line of lines) {
+            // Precise detection for prompt selection
             if (HIRAGANA.test(line) || KATAKANA.test(line)) ja++;
             else if (HANGUL.test(line)) ko++;
             else if (CJK_UNIFIED.test(line)) zh++;
@@ -389,9 +391,16 @@ NOTE: Already English.
         statusEl.classList.toggle('cached', isCached);
     }
 
+    const normalizationCache = new Map();
     function normalizeCacheKey(str) {
         if (!str) return "";
-        return str.replace(/\s+/g, '').toLowerCase();
+        let cached = normalizationCache.get(str);
+        if (cached) return cached;
+        // Limit cache size to prevent memory leaks
+        if (normalizationCache.size > 2000) normalizationCache.clear();
+        const normalized = str.replace(/\s+/g, '').toLowerCase();
+        normalizationCache.set(str, normalized);
+        return normalized;
     }
 
     function cleanTextForComparison(str) {
@@ -416,18 +425,23 @@ NOTE: Already English.
         if (textEl) {
             return textEl.textContent?.trim() || '';
         }
-        // Fallback: clone and remove translation
-        const clone = element.cloneNode(true);
-        const trans = clone.querySelector(`.${CONFIG.TRANSLATION_CLASS}`);
-        if (trans) trans.remove();
-        return clone.textContent?.trim() || '';
+        // Bolt: Optimized text extraction avoiding expensive cloneNode(true)
+        let text = "";
+        for (const child of element.childNodes) {
+            if (child.nodeType === 3) { // TEXT_NODE
+                text += child.textContent;
+            } else if (child.nodeType === 1 && !child.classList.contains(CONFIG.TRANSLATION_CLASS)) {
+                text += child.textContent;
+            }
+        }
+        return text.trim();
     }
 
     function isLyricLine(node) {
         return node.matches && node.matches(LYRIC_SELECTOR);
     }
 
-    function applyTranslationToDOM(element, text, translation) {
+    function applyTranslationToDOM(element, text, translation, cacheKey) {
         if (cleanTextForComparison(text) === cleanTextForComparison(translation)) return;
 
         let existingTrans = element.querySelector(`.${CONFIG.TRANSLATION_CLASS}`);
@@ -451,19 +465,7 @@ NOTE: Already English.
             }
         }
 
-        element.setAttribute(CONFIG.PROCESSED_ATTR, getStrHash(normalizeCacheKey(text)));
-    }
-
-    function attemptRender(element) {
-        if (!element || !document.body.contains(element)) return;
-        const text = getOriginalText(element);
-        if (!text) return;
-        const cacheKey = normalizeCacheKey(text);
-        const translation = state.runtimeCache.get(cacheKey);
-        if (!translation || translation === '__SKIP__') return;
-        const rect = element.getBoundingClientRect();
-        if (rect.bottom < -100) return;
-        applyTranslationToDOM(element, text, translation);
+        element.setAttribute(CONFIG.PROCESSED_ATTR, getStrHash(cacheKey));
     }
 
     function findLiveElementByText(text) {
@@ -475,65 +477,39 @@ NOTE: Already English.
         return null;
     }
 
-    // Helper: Ensure translation is present on element, re-add if missing
-    function ensureTranslation(element) {
-        if (!element || !document.body.contains(element)) return;
-        const existingTranslation = element.querySelector(`.${CONFIG.TRANSLATION_CLASS}`);
-        if (existingTranslation) return; // Already has translation
-
-        const text = getOriginalText(element);
-        if (!text) return;
-        const cacheKey = normalizeCacheKey(text);
-        const translation = state.runtimeCache.get(cacheKey);
-        if (!translation || translation === '__SKIP__') return;
-
-        // Translation is cached but missing from DOM - re-add it
-        applyTranslationToDOM(element, text, translation);
-    }
-
     function setupObservers() {
         state.mutationObserver = new MutationObserver((mutations) => {
             // Collect all affected lyric lines to ensure translations
             const affectedLines = new Set();
 
             for (const mutation of mutations) {
-                let target = mutation.target;
-                if (target.nodeType === 3) target = target.parentElement;
+                // Bolt: Ignore changes to our own data attribute to avoid feedback loops
+                if (mutation.type === 'attributes' && mutation.attributeName === CONFIG.PROCESSED_ATTR) continue;
 
-                if (target && target.nodeType === 1) {
-                    // Check if target itself is a lyric line
-                    if (isLyricLine(target)) {
-                        affectedLines.add(target);
-                    } else if (target.closest) {
-                        const line = target.closest(LYRIC_SELECTOR);
-                        if (line) affectedLines.add(line);
-                    }
-
-                    // Also check if target contains lyric lines
-                    if (target.querySelectorAll) {
-                        target.querySelectorAll(LYRIC_SELECTOR).forEach(line => affectedLines.add(line));
-                    }
-                }
-
-                // Handle added nodes
-                if (mutation.addedNodes.length > 0) {
+                if (mutation.type === 'childList') {
                     for (const node of mutation.addedNodes) {
                         if (node.nodeType === 1) {
-                            if (isLyricLine(node)) {
-                                affectedLines.add(node);
-                            } else if (node.querySelectorAll) {
-                                node.querySelectorAll(LYRIC_SELECTOR).forEach(line => affectedLines.add(line));
+                            if (isLyricLine(node)) affectedLines.add(node);
+                            else {
+                                // Only querySelectorAll on added branches, not the whole container
+                                const lines = node.querySelectorAll(LYRIC_SELECTOR);
+                                for (const line of lines) affectedLines.add(line);
                             }
                         }
+                    }
+                } else {
+                    // Bolt: For attribute/text changes, only check target and its parent/closest line
+                    let target = mutation.target;
+                    if (target.nodeType === 3) target = target.parentElement;
+                    if (target && target.nodeType === 1) {
+                        const line = target.closest(LYRIC_SELECTOR);
+                        if (line) affectedLines.add(line);
                     }
                 }
             }
 
-            // Ensure translations on all affected lines
-            affectedLines.forEach(line => {
-                attemptRender(line);
-                ensureTranslation(line);
-            });
+            // Ensure translations on all affected lines using single entry point
+            affectedLines.forEach(line => processLyricElement(line));
 
             // Throttled full container scan
             if (!state.observerTimeout && state.currentContainer) {
@@ -547,8 +523,6 @@ NOTE: Already English.
         state.intersectionObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    attemptRender(entry.target);
-                    ensureTranslation(entry.target);
                     processLyricElement(entry.target);
                     state.intersectionObserver.unobserve(entry.target);
                 }
@@ -595,14 +569,7 @@ NOTE: Already English.
 
     document.addEventListener('visibilitychange', () => manageObserver(!document.hidden));
 
-    function queueElementForTranslation(element, text) {
-        // Check cache first
-        const cacheKey = normalizeCacheKey(text);
-        if (state.runtimeCache.has(cacheKey)) {
-            attemptRender(element);
-            return;
-        }
-
+    function queueElementForTranslation(element, text, cacheKey) {
         // Skip if Smart Skip already triggered for this session
         if (state.smartSkipTriggered && state.smartSkipEnabled) {
             state.runtimeCache.set(cacheKey, '__SKIP__');
@@ -642,11 +609,23 @@ NOTE: Already English.
         }
         state.queue = state.queue.filter(item => document.body.contains(item.element));
 
+        // Bolt: Optimized sorting by visibility to prioritize active lyrics
+        // Use a Map to cache rects during sort to avoid redundant getBoundingClientRect calls
         const viewTop = 0;
         const viewBottom = window.innerHeight;
+        const rectCache = new Map();
+        const getRect = (el) => {
+            let r = rectCache.get(el);
+            if (!r) {
+                r = el.getBoundingClientRect();
+                rectCache.set(el, r);
+            }
+            return r;
+        };
+
         state.queue.sort((a, b) => {
-            const rectA = a.element.getBoundingClientRect();
-            const rectB = b.element.getBoundingClientRect();
+            const rectA = getRect(a.element);
+            const rectB = getRect(b.element);
             const getTier = (rect) => {
                 if (rect.height === 0) return 4;
                 if (rect.bottom > viewTop && rect.top < viewBottom) return 1;
@@ -664,8 +643,11 @@ NOTE: Already English.
         while (state.queue.length > 0 && batch.length < CONFIG.MAX_BATCH_SIZE) {
             const item = state.queue.shift();
             const cacheKey = normalizeCacheKey(item.text);
-            if (state.runtimeCache.has(cacheKey)) {
-                attemptRender(item.element);
+            const cachedTranslation = state.runtimeCache.get(cacheKey);
+            if (cachedTranslation) {
+                if (cachedTranslation !== '__SKIP__') {
+                    applyTranslationToDOM(item.element, item.text, cachedTranslation, cacheKey);
+                }
                 cachedCount++;
             } else {
                 batch.push(item);
@@ -750,10 +732,10 @@ NOTE: Already English.
                                 state.runtimeCache.delete(firstKey);
                             }
                             state.runtimeCache.set(cacheKey, trans);
-                            attemptRender(item.element);
+                            applyTranslationToDOM(item.element, item.text, trans, cacheKey);
                             if (!document.body.contains(item.element)) {
                                 const liveNode = findLiveElementByText(item.text);
-                                if (liveNode) attemptRender(liveNode);
+                                if (liveNode) applyTranslationToDOM(liveNode, item.text, trans, cacheKey);
                             }
                         } else {
                             state.runtimeCache.set(cacheKey, '__SKIP__');
@@ -889,18 +871,34 @@ NOTE: Already English.
     }
 
     function processLyricElement(element) {
+        if (!element || !document.body.contains(element)) return;
         const text = getOriginalText(element);
         if (!text) return;
         const cacheKey = normalizeCacheKey(text);
-        if (state.runtimeCache.has(cacheKey)) {
-            attemptRender(element);
-            element.setAttribute(CONFIG.PROCESSED_ATTR, getStrHash(cacheKey));
+        const currentHash = getStrHash(cacheKey);
+
+        // Bolt: Consistently check if we need to render or queue
+        if (element.getAttribute(CONFIG.PROCESSED_ATTR) === currentHash) {
+            // Already matched this text, but ensure translation is visible (might have been removed by Spotify)
+            if (!element.querySelector(`.${CONFIG.TRANSLATION_CLASS}`)) {
+                const translation = state.runtimeCache.get(cacheKey);
+                if (translation && translation !== '__SKIP__') {
+                    applyTranslationToDOM(element, text, translation, cacheKey);
+                }
+            }
             return;
         }
-        const currentHash = getStrHash(cacheKey);
-        if (element.getAttribute(CONFIG.PROCESSED_ATTR) !== currentHash) {
+
+        const translation = state.runtimeCache.get(cacheKey);
+        if (translation) {
+            if (translation !== '__SKIP__') {
+                applyTranslationToDOM(element, text, translation, cacheKey);
+            } else {
+                element.setAttribute(CONFIG.PROCESSED_ATTR, currentHash);
+            }
+        } else {
             element.setAttribute(CONFIG.PROCESSED_ATTR, currentHash);
-            queueElementForTranslation(element, text);
+            queueElementForTranslation(element, text, cacheKey);
         }
     }
 
