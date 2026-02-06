@@ -112,7 +112,13 @@
       try {
         const lyrics = await provider.fetch(artistName, songTitle);
         if (lyrics) {
-          span.innerHTML = `<div style="white-space:pre-wrap;font-size:0.5em"><strong>${lyrics}</strong></div>`;
+          span.textContent = '';
+          const div = document.createElement('div');
+          Object.assign(div.style, { whiteSpace: 'pre-wrap', fontSize: '0.5em' });
+          const strong = document.createElement('strong');
+          strong.textContent = lyrics;
+          div.appendChild(strong);
+          span.appendChild(div);
           return;
         }
       } catch { /* try next provider */ }
