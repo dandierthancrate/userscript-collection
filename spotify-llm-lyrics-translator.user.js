@@ -798,6 +798,20 @@ NOTE: Already English.
             top_p: state.topP,
             stream: false
         };
+
+        // Provider-specific reasoning handling (Always Hidden)
+        const providerName = getCurrentProvider();
+        if (providerName === 'groq') {
+            // Groq uses include_reasoning for gpt-oss models, reasoning_format for others
+            if (state.model.toLowerCase().includes('gpt-oss')) {
+                requestPayload.include_reasoning = false;
+            } else {
+                requestPayload.reasoning_format = "hidden";
+            }
+        } else if (providerName === 'cerebras') {
+            requestPayload.reasoning_format = "hidden";
+        }
+
         if (state.maxCompletionTokens !== -1) requestPayload.max_completion_tokens = state.maxCompletionTokens;
 
         return new Promise(resolve => {
