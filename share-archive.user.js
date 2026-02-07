@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Share Archive
 // @namespace    https://docs.scriptcat.org/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Share current page or links to archive.today (removes tracking params)
 // @author       Antigravity
 // @match        *://*/*
@@ -316,8 +316,49 @@
     // URL Cleaning
     // ─────────────────────────────────────────────────────────────────────────
 
+    function processArchiveUrl(url) {
+        const archivePattern = /^https?:\/\/(?:archive\.(?:today|ph|is|fo|li|md|vn)\/o\/[a-zA-Z0-9]+\/)(.+)$/;
+        const match = url.match(archivePattern);
+
+        if (match) {
+            const embeddedUrl = match[1];
+            try {
+                const urlObj = new URL(embeddedUrl);
+                let hasNestedUrls = false;
+
+                // Check for nested URLs in query parameters
+                for (const [key, value] of urlObj.searchParams) {
+                    if (value && (value.startsWith('http://') || value.startsWith('https://'))) {
+                        hasNestedUrls = true;
+                        break;
+                    }
+                }
+
+                if (hasNestedUrls) {
+                     // Extract just scheme + authority + path (no query params)
+                    return `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
+                } else {
+                     // Extract URL with query parameters but without fragments
+                     // The regex in Kotlin was: ^(https?://[^#]+)
+                     // Here we can just use the full embeddedUrl but strip hash if present,
+                     // effectively verified by the URL constructor above.
+                     // However, to match Kotlin logic "remove fragments":
+                     urlObj.hash = '';
+                     return urlObj.toString();
+                }
+
+            } catch (e) {
+                return embeddedUrl;
+            }
+        }
+        return url;
+    }
+
     function cleanUrl(url) {
-        let cleanedUrl = applyClearUrls(url);
+        // First, check if it's an archive.today redirect and extract the original URL
+        let cleanedUrl = processArchiveUrl(url);
+
+        cleanedUrl = applyClearUrls(cleanedUrl);
 
         try {
             const urlObj = new URL(cleanedUrl);
