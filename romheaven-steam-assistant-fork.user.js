@@ -162,8 +162,13 @@
       };
     }
 
-    setStatus(html, color = '#d1d8e0') {
-      this.els.status.innerHTML = html;
+    setStatus(content, color = '#d1d8e0') {
+      this.els.status.textContent = '';
+      if (content instanceof Node) {
+        this.els.status.appendChild(content);
+      } else {
+        this.els.status.textContent = content;
+      }
       this.els.status.style.color = color;
     }
 
@@ -186,7 +191,12 @@
 
     renderSuccess(entry, buildId) {
       const { install_dir, build, pixeldrain, archive_size } = entry;
-      this.els.size.innerHTML = `📦 File Size: <strong>${Utils.formatSize(parseInt(archive_size))}</strong>`;
+
+      this.els.size.textContent = '';
+      this.els.size.append('📦 File Size: ');
+      const sizeStrong = document.createElement('strong');
+      sizeStrong.textContent = Utils.formatSize(parseInt(archive_size));
+      this.els.size.appendChild(sizeStrong);
 
       // Main Download
       const dlUrl = `${CONFIG.ENDPOINTS.DIRECT}/${entry.appid}.rar?filename=${encodeURIComponent(install_dir)}.rar`;
@@ -202,8 +212,24 @@
 
       // Version Check
       if (buildId && build) {
-        if (buildId === build) this.setStatus('✅ <strong>Latest game version available.</strong>', '#00ff88');
-        else this.setStatus(`ℹ️ Older version available. <a href="https://steamdb.info/patchnotes/${build}" target="_blank" style="color:#66c0f4">(${build})</a>`, '#BEB2A4');
+        if (buildId === build) {
+          const msg = document.createElement('span');
+          msg.textContent = '✅ ';
+          const strong = document.createElement('strong');
+          strong.textContent = 'Latest game version available.';
+          msg.appendChild(strong);
+          this.setStatus(msg, '#00ff88');
+        } else {
+          const msg = document.createElement('span');
+          msg.textContent = 'ℹ️ Older version available. ';
+          const link = document.createElement('a');
+          link.href = `https://steamdb.info/patchnotes/${build}`;
+          link.target = '_blank';
+          link.style.color = '#66c0f4';
+          link.textContent = `(${build})`;
+          msg.appendChild(link);
+          this.setStatus(msg, '#BEB2A4');
+        }
       } else {
         this.setStatus('ℹ️ Build info unavailable.', '#a4b0be');
       }
