@@ -392,6 +392,9 @@ NOTE: Already English.
     }
 
     const normalizationCache = new Map();
+    const comparisonCache = new Map();
+    const hashCache = new Map();
+
     function normalizeCacheKey(str) {
         if (!str) return "";
         let cached = normalizationCache.get(str);
@@ -405,17 +408,31 @@ NOTE: Already English.
 
     function cleanTextForComparison(str) {
         if (!str) return "";
-        return str.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+        // Bolt: Cached for performance (expensive regex)
+        let cached = comparisonCache.get(str);
+        if (cached) return cached;
+        if (comparisonCache.size > 2000) comparisonCache.clear();
+
+        const result = str.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+        comparisonCache.set(str, result);
+        return result;
     }
 
     function getStrHash(str) {
+        // Bolt: Cached for performance (hot path validation)
+        if (!str) return '0';
+        let cached = hashCache.get(str);
+        if (cached) return cached;
+        if (hashCache.size > 2000) hashCache.clear();
+
         let hash = 0;
-        if (str.length === 0) return '0';
         for (let i = 0; i < str.length; i++) {
             hash = ((hash << 5) - hash) + str.charCodeAt(i);
             hash |= 0;
         }
-        return hash.toString();
+        const result = hash.toString();
+        hashCache.set(str, result);
+        return result;
     }
 
     function getOriginalText(element) {
