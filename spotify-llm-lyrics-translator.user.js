@@ -203,10 +203,8 @@ NOTE: Already English.
         }
 
         static saveRuntimeCache(cache) {
-            if (cache.size > CONFIG.MAX_CACHE_SIZE) {
-                const keys = Array.from(cache.keys());
-                const toRemove = keys.slice(0, keys.length - CONFIG.MAX_CACHE_SIZE);
-                toRemove.forEach(k => cache.delete(k));
+            while (cache.size > CONFIG.MAX_CACHE_SIZE) {
+                cache.delete(cache.keys().next().value);
             }
             GM_setValue('llm_cache_v1', Object.fromEntries(cache));
         }
@@ -224,6 +222,7 @@ NOTE: Already English.
         queue: [],
         isLoopRunning: false,
         lastRequestTimestamp: 0,
+        lastCacheSave: 0,
         runtimeCache: Storage.loadRuntimeCache(),
         mutationObserver: null,
         intersectionObserver: null,
@@ -400,7 +399,10 @@ NOTE: Already English.
         let cached = normalizationCache.get(str);
         if (cached) return cached;
         // Limit cache size to prevent memory leaks
-        if (normalizationCache.size > 2000) normalizationCache.clear();
+        if (normalizationCache.size > 2000) {
+            const oldestKey = normalizationCache.keys().next().value;
+            normalizationCache.delete(oldestKey);
+        }
         const normalized = str.replace(/\s+/g, '').toLowerCase();
         normalizationCache.set(str, normalized);
         return normalized;
@@ -770,7 +772,13 @@ NOTE: Already English.
                         state.queue = [];
                     }
 
-                    saveCache();
+                    const now = Date.now();
+                    // Bolt: Throttle cache saving to prevent main thread blocking (GM_setValue is sync)
+                    if (now - state.lastCacheSave > 10000 || state.queue.length === 0) {
+                        saveCache();
+                        state.lastCacheSave = now;
+                    }
+
                     if (state.currentContainer) scanContainer(state.currentContainer);
                     updateStatus("Done", false);
                 } else {
