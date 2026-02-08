@@ -361,7 +361,7 @@ NOTE: Already English.
     }
 
     GM_addStyle(`
-        :root { --llm-lyrics-color: ${state.textColor}; }
+        :root { --llm-lyrics-color: ${CONFIG.DEFAULT_COLOR}; }
         [data-testid="lyrics-container"], .os-viewport, .lyrics-component { overflow-anchor: auto !important; }
         .${CONFIG.TRANSLATION_CLASS} {
             display: block; font-size: 0.85em; color: var(--llm-lyrics-color);
