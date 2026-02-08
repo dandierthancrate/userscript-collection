@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
 // @namespace    https://docs.scriptcat.org/
-// @version      2.20.1
+// @version      2.20.2
 // @description  Translates Spotify lyrics using LLM API.
 // @author       Antigravity
 // @match        https://open.spotify.com/*
@@ -14,6 +14,8 @@
 // @connect      api.cerebras.ai
 // @connect      api.groq.com
 // @license      GPL-3.0-or-later
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm-lyrics-translator.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm-lyrics-translator.user.js
 // ==/UserScript==
 
 (function () {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Share Archive
 // @namespace    https://docs.scriptcat.org/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Share current page or links to archive.today (removes tracking params)
 // @author       Antigravity
 // @match        *://*/*
@@ -20,6 +20,8 @@
 // @connect      archive.md
 // @run-at       document-start
 // @license      GPL-3.0-or-later
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/share-archive.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/share-archive.user.js
 // ==/UserScript==
 
 (function () {

@@ -4,10 +4,12 @@
 // @match        https://www.youtube.com/*
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-start
-// @version      1.0.9
+// @version      1.0.10
 // @author       Antigravity
 // @description  Prevents featured videos from autoplaying on channel pages
 // @license      GPL-3.0-or-later
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js
 // ==/UserScript==
 
 (function () {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Steam Links Dropdowns Fork
 // @namespace    https://greasyfork.org/en/scripts/532327-steam-pirate-misc-links-dropdowns
-// @version      1.2.4
+// @version      1.2.5
 // @description  Adds dropdown menus with game download and cheat links on Steam app pages
 // @author       Antigravity
 // @match        https://store.steampowered.com/app/*
@@ -9,6 +9,8 @@
 // @grant        GM_addStyle
 // @license      GPL-3.0-or-later
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/steam-links-dropdowns-fork.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/steam-links-dropdowns-fork.user.js
 // ==/UserScript==
 
 (function () {
