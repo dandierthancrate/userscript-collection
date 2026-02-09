@@ -4,11 +4,11 @@
 > **Tested Environment**: Developed and tested exclusively on **Brave Browser** using the **ScriptCat** manager.
 > While these scripts target Chromium-based browsers, their behavior on other browsers or userscript managers is not guaranteed.
 
-A curated collection of lean, high-performance userscripts designed to enhance your web experience.
+A curated collection of lean, high-performance userscripts designed to enhance your web experience on **Brave** and other Chromium-based browsers.
 
 ## 📥 Installation
 
-1. Install a userscript manager compatible with your browser.
+1. Install a userscript manager like [ScriptCat](https://scriptcat.org/).
 2. Click the **Install** button next to a script below to trigger a one-click installation.
 
 ---
