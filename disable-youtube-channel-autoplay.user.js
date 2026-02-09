@@ -7,7 +7,7 @@
 // @version      1.0.11
 // @author       Antigravity
 // @description  Prevents featured videos from autoplaying on channel pages
-// @license      GPL-3.0-or-later
+// @license      MIT
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js
 // ==/UserScript==

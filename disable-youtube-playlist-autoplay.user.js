@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Disable YouTube Playlist Autoplay
 // @namespace    https://docs.scriptcat.org/
+// @version      1.0.11
+// @description  Stops video at end, prevents playlist auto-advance
+// @author       Antigravity
 // @match        https://www.youtube.com/*
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-idle
-// @version      1.0.11
-// @author       Antigravity
-// @description  Stops video at end, prevents playlist auto-advance
-// @license      GPL-3.0-or-later
+// @license      MIT
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-playlist-autoplay.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-playlist-autoplay.user.js
 // ==/UserScript==

@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Nyaa Linker Fork
-// @namespace    https://github.com/po5/nyaa-linker-userscript
+// @name         Nyaa Linker Userscript
+// @namespace    https://docs.scriptcat.org/
 // @version      2.5.3
 // @description  Adds a button to Anime and Manga database websites that opens a relevant Nyaa search
-// @author       Metacor, eva, Antigravity
+// @author       Antigravity
 // @match        *://*.myanimelist.net/*
 // @match        *://*.anilist.co/*
 // @match        *://*.kitsu.app/*
@@ -16,10 +16,10 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
-// @license      GPL-3.0-or-later
+// @license      MIT
 // @run-at       document-end
-// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-fork.user.js
-// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-fork.user.js
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-userscript.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-userscript.user.js
 // ==/UserScript==
 
 let settings;

@@ -1,17 +1,17 @@
 // ==UserScript==
-// @name         Fix Missing Spotify Lyrics Fork
-// @namespace    https://chromewebstore.google.com/detail/kakcldiibcfekhiflfafngmkbgcdapko?utm_source=item-share-cb
+// @name         Fix Missing Spotify Lyrics
+// @namespace    https://docs.scriptcat.org/
+// @version      1.1.4
+// @description  Fetches missing lyrics from LRCLIB/lyrics.com when Spotify has none
+// @author       Antigravity
 // @match        https://open.spotify.com/*
-// @run-at       document-idle
 // @grant        GM_xmlhttpRequest
 // @connect      lrclib.net
 // @connect      lyrics.com
-// @version      1.1.4
-// @author       Antigravity
-// @description  Fetches missing lyrics from LRCLIB/lyrics.com when Spotify has none
-// @license      GPL-3.0-or-later
-// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/fix-missing-spotify-lyrics-fork.user.js
-// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/fix-missing-spotify-lyrics-fork.user.js
+// @run-at       document-idle
+// @license      MIT
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/fix-missing-spotify-lyrics.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/fix-missing-spotify-lyrics.user.js
 // ==/UserScript==
 
 (function () {

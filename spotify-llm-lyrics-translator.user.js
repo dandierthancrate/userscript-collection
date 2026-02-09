@@ -13,7 +13,7 @@
 // @grant        GM_info
 // @connect      api.cerebras.ai
 // @connect      api.groq.com
-// @license      GPL-3.0-or-later
+// @license      MIT
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm-lyrics-translator.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm-lyrics-translator.user.js
 // ==/UserScript==

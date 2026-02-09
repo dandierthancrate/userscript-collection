@@ -1,15 +1,15 @@
 // ==UserScript==
-// @name         Grok Rate Limit Display Fork
-// @namespace    https://greasyfork.org/en/scripts/558017-grok-rate-limit-display
+// @name         Grok Rate Limit Display
+// @namespace    https://docs.scriptcat.org/
 // @version      1.1.6
 // @description  Displays remaining queries and cooldowns on grok.com.
-// @author       Antigravity, KHROTU, ported from Blankspeaker & CursedAtom
+// @author       Antigravity
 // @match        https://grok.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=grok.com
 // @grant        GM_addStyle
-// @license      GPL-3.0-or-later
-// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/grok-rate-limit-display-fork.user.js
-// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/grok-rate-limit-display-fork.user.js
+// @license      MIT
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/grok-rate-limit-display.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/grok-rate-limit-display.user.js
 // ==/UserScript==
 
 (function () {

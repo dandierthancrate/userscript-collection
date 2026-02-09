@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         Enable Copy & Right Click Fork
-// @namespace    https://greasyfork.org/en/scripts/23772-absolute-enable-right-click-copy
+// @name         Enable Copy & Right Click
+// @namespace    https://docs.scriptcat.org/
 // @version      1.9.4
 // @description  Force enable right click, copy, paste, and text selection (whitelist mode)
 // @author       Antigravity
@@ -9,9 +9,9 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @run-at       document-start
-// @license      GPL-3.0-or-later
-// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/enable-copy-right-click-fork.user.js
-// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/enable-copy-right-click-fork.user.js
+// @license      MIT
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/enable-copy-and-right-click.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/enable-copy-and-right-click.user.js
 // ==/UserScript==
 /* global GM_registerMenuCommand, GM_setValue, GM_getValue */
 

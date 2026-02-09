@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         Romheaven Steam Assistant Fork
-// @namespace    https://romheaven.com/faq
+// @name         Romheaven Steam Assistant
+// @namespace    https://docs.scriptcat.org/
 // @version      1.3.3
 // @description  Download Clean Steam Files directly from a game's store page
 // @author       Antigravity
@@ -14,9 +14,9 @@
 // @connect      api.steamcmd.net
 // @connect      pixeldrain.com
 // @connect      dl.romheaven.com
-// @license      GPL-3.0-or-later
-// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant-fork.user.js
-// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant-fork.user.js
+// @license      MIT
+// @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant.user.js
+// @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant.user.js
 // ==/UserScript==
 
 (function () {

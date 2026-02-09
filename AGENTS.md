@@ -73,13 +73,13 @@ Set-and-forget agents that enforce user preferences on YouTube.
 ## 🎮 Steam & Gaming Assistants
 
 **Type**: Enhancement Tools
-**Source**: `romheaven-steam-assistant-fork.user.js`, `steam-links-dropdowns-fork.user.js`
+**Source**: `romheaven-steam-assistant.user.js`, `steam-links-dropdowns.user.js`
 
 Agents that augment Steam Store pages with external data and download options.
 
 ### Capabilities
--   **Romheaven Assistant**: Injects "Clean Steam Files" download buttons directly onto the Steam store page for a game.
--   **Steam Links**: Adds a dropdown menu with quick searches for the current game on various piracy/resource sites (CS.RIN.RU, SteamDB, etc.).
+-   **Romheaven Steam Assistant**: Injects "Clean Steam Files" download buttons directly onto the Steam store page for a game.
+-   **Steam Links Dropdowns**: Adds a dropdown menu with quick searches for the current game on various piracy/resource sites (CS.RIN.RU, SteamDB, etc.).
 
 ### Interaction
 -   **Visual**: Adds new buttons/menus to the Steam interface. Click to use.
@@ -93,4 +93,4 @@ Agents that augment Steam Store pages with external data and download options.
 | **Fix Missing Spotify Lyrics** | Fetches lyrics from external sources (LRCLIB) when Spotify has none. | Automatic fallback. |
 | **Grok Rate Limit Display** | Adds a HUD to `grok.com` showing remaining queries and reset times. | Visual overlay. |
 | **Enable Copy & Right Click** | Unlocks right-click and selection on sites that block it. | Passive / Always on. |
-| **Nyaa Linker** | Adds "Search Nyaa" buttons to anime database sites (MAL, AniList). | Visual button injection. |
+| **Nyaa Linker Userscript** | Adds "Search Nyaa" buttons to anime database sites (MAL, AniList). | Visual button injection. |
