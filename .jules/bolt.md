@@ -15,3 +15,7 @@
 ## 2025-05-15 - Synchronous GM_setValue Performance Impact
 **Learning:** `GM_setValue` is synchronous and can block the main thread for tens of milliseconds when writing large objects (e.g., >1MB cache). Calling it frequently (e.g., after every small batch of work) causes noticeable UI jank.
 **Action:** Throttle `GM_setValue` calls (e.g., max once per 10s) and optimize data structures to minimize serialization overhead. Use iterative deletion for `Map` trimming instead of `Array.from` to avoid memory spikes.
+
+## 2025-05-16 - CSS Animation for Element Detection
+**Learning:** Using a global `MutationObserver` on `document.body` with `subtree: true` to detect when a specific element appears is extremely inefficient (O(N) on every DOM change).
+**Action:** Use CSS animations (`animationstart` event) on the target selector to detect element insertion with zero overhead during unrelated DOM mutations. Only use `MutationObserver` for specific, scoped updates once the element is found.

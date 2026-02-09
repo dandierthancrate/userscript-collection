@@ -15,17 +15,6 @@
 (function () {
   'use strict';
 
-  // Inject CSS to prevent text overlap with the rate limit pill
-  GM_addStyle(`
-    .query-bar div[contenteditable="true"],
-    .query-bar textarea[aria-label*="Ask Grok"] {
-      padding-right: 110px !important;
-    }
-    #grok-rate-limit {
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    }
-  `);
-
   // ═══════════════════════════════════════════════════════════════════════════
   // CONFIGURATION & CONSTANTS
   // ═══════════════════════════════════════════════════════════════════════════
@@ -80,6 +69,21 @@
       ] 
     }
   };
+
+  // Inject CSS to prevent text overlap with the rate limit pill
+  GM_addStyle(`
+    @keyframes bolt-grok-appear { from { opacity: 0.99; } to { opacity: 1; } }
+    ${CONFIG.SELECTORS.queryBar} {
+      animation: bolt-grok-appear 0.001s;
+    }
+    ${CONFIG.SELECTORS.queryBar} div[contenteditable="true"],
+    ${CONFIG.SELECTORS.queryBar} textarea[aria-label*="Ask Grok"] {
+      padding-right: 110px !important;
+    }
+    #grok-rate-limit {
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+  `);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // UTILITIES
@@ -376,7 +380,10 @@
     observers: {},
 
     async update(force = false) {
-      if (!this.queryBar || !document.body.contains(this.queryBar)) return;
+      if (!this.queryBar || !this.queryBar.isConnected) {
+        this.disconnect();
+        return;
+      }
       
       const model = ModelManager.detect(this.queryBar);
       if (model !== this.modelName) force = true;
@@ -448,18 +455,21 @@
     },
     
     init() {
-      const start = () => {
-        const qb = document.querySelector(CONFIG.SELECTORS.queryBar);
-        if (qb && qb !== this.queryBar) this.setup(qb);
-        else if (!qb) this.disconnect();
-      };
+      // Bolt: Use CSS animation to detect element insertion instead of global MutationObserver
+      // This significantly reduces main thread overhead by avoiding O(N) checks on every DOM mutation.
+      document.addEventListener('animationstart', (e) => {
+        if (e.animationName === 'bolt-grok-appear') {
+          this.setup(e.target);
+        }
+      });
 
       document.addEventListener('visibilitychange', () => 
         document.visibilityState === 'visible' ? this.update(true) : clearInterval(this.pollTimer)
       );
 
-      new MutationObserver(start).observe(document.body, { childList: true, subtree: true });
-      start();
+      // Handle case where element already exists
+      const qb = document.querySelector(CONFIG.SELECTORS.queryBar);
+      if (qb) this.setup(qb);
     }
   };
 
