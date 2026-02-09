@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fix Missing Spotify Lyrics
-// @namespace    https://docs.scriptcat.org/
-// @version      1.1.4
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.1.5
 // @description  Fetches missing lyrics from LRCLIB/lyrics.com when Spotify has none
 // @author       dandierthancrate
 // @match        https://open.spotify.com/*

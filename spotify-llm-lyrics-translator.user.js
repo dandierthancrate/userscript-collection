@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM Lyrics Translator
-// @namespace    https://docs.scriptcat.org/
-// @version      2.20.2
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      2.20.3
 // @description  Translates Spotify lyrics using LLM API.
 // @author       dandierthancrate
 // @match        https://open.spotify.com/*

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Nyaa Linker Userscript
-// @namespace    https://docs.scriptcat.org/
-// @version      2.5.3
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      2.5.4
 // @description  Adds a button to Anime and Manga database websites that opens a relevant Nyaa search
 // @author       dandierthancrate
 // @match        *://*.myanimelist.net/*

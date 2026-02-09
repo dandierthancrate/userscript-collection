@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Share Archive
-// @namespace    https://docs.scriptcat.org/
-// @version      1.3.3
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.3.4
 // @description  Share current page or links to archive.today (removes tracking params)
 // @author       dandierthancrate
 // @match        *://*/*

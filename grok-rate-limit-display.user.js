@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Grok Rate Limit Display
-// @namespace    https://docs.scriptcat.org/
-// @version      1.1.6
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.1.7
 // @description  Displays remaining queries and cooldowns on grok.com.
 // @author       dandierthancrate
 // @match        https://grok.com/*

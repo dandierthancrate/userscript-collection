@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Steam Links Dropdowns
-// @namespace    https://docs.scriptcat.org/
-// @version      1.2.6
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.2.7
 // @description  Adds dropdown menus with game download and cheat links on Steam app pages
 // @author       dandierthancrate
 // @match        https://store.steampowered.com/app/*

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Disable YouTube Playlist Autoplay
-// @namespace    https://docs.scriptcat.org/
-// @version      1.0.11
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.0.12
 // @description  Stops video at end, prevents playlist auto-advance
 // @author       dandierthancrate
 // @match        https://www.youtube.com/*

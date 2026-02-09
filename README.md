@@ -1,10 +1,10 @@
 # 🛠️ Userscript Collection
 
-A curated collection of lean, high-performance userscripts designed to enhance your web experience. Optimized for **ScriptCat** and Chromium-based browsers.
+A curated collection of lean, high-performance userscripts designed to enhance your web experience. Enhanced for **ScriptCat**, but fully compatible with **Tampermonkey**, **Violentmonkey**, and other major managers on Chromium-based browsers.
 
 ## 📥 Installation
 
-1. Install a userscript manager like [ScriptCat](https://scriptcat.org/).
+1. Install a userscript manager such as [ScriptCat](https://scriptcat.org/), [Tampermonkey](https://www.tampermonkey.net/), or [Violentmonkey](https://violentmonkey.github.io/).
 2. Click on the filename in the table below.
 3. Click the **Raw** button to trigger the installation.
 

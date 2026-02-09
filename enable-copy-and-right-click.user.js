@@ -1,7 +1,8 @@
+```
 // ==UserScript==
 // @name         Enable Copy & Right Click
-// @namespace    https://docs.scriptcat.org/
-// @version      1.9.4
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.9.5
 // @description  Force enable right click, copy, paste, and text selection (whitelist mode)
 // @author       dandierthancrate
 // @match        *://*/*

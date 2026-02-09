@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Romheaven Steam Assistant
-// @namespace    https://docs.scriptcat.org/
-// @version      1.3.3
+// @namespace    https://github.com/dandierthancrate/userscript-collection
+// @version      1.3.4
 // @description  Download Clean Steam Files directly from a game's store page
 // @author       dandierthancrate
 // @match        https://store.steampowered.com/app/*
