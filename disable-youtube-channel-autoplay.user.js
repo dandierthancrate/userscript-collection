@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Disable YouTube Channel Autoplay
 // @namespace    https://docs.scriptcat.org/
+// @version      1.0.11
+// @description  Prevents featured videos from autoplaying on channel pages
+// @author       dandierthancrate
 // @match        https://www.youtube.com/*
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-start
-// @version      1.0.11
-// @author       dandierthancrate
-// @description  Prevents featured videos from autoplaying on channel pages
 // @license      MIT
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js
