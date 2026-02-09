@@ -3,6 +3,8 @@
 > **Tested Environment**: Developed and tested exclusively on **Brave Browser** using the **ScriptCat** manager.
 > While these scripts target Chromium-based browsers, their behavior on other browsers or userscript managers is not guaranteed.
 
+# ⚠️ FOR MY PERSONAL USE
+
 # 🛠️ Userscript Collection
 
 A curated collection of userscripts designed to enhance your web experience on **Brave** and other Chromium-based browsers.
