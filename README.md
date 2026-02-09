@@ -35,7 +35,6 @@ A curated collection of lean, high-performance userscripts designed to enhance y
 | :--- | :--- | :--- |
 | **Romheaven Steam Assistant** | Direct downloads for Clean Steam Files from the store page. | [View](./romheaven-steam-assistant.user.js) |
 | **Steam Links Dropdowns** | Quick links for scene downloads, repacks, and trainers. | [View](./steam-links-dropdowns.user.js) |
-| **Nyaa Linker Userscript** | Adds Nyaa search buttons to MAL, AniList, and other databases. | [View](./nyaa-linker-userscript.user.js) |
 
 ### 🤖 AI & Productivity
 
@@ -44,6 +43,7 @@ A curated collection of lean, high-performance userscripts designed to enhance y
 | **Grok Rate Limit Display** | Shows remaining queries and cooldowns on grok.com. | [View](./grok-rate-limit-display.user.js) |
 | **Enable Copy & Right Click** | Force enables right-click, selection, and copy on restricted sites. | [View](./enable-copy-and-right-click.user.js) |
 | **Share Archive** | Archives pages to archive.today with ClearURLs integration and tracking removal. | [View](./share-archive.user.js) |
+| **Nyaa Linker Userscript** | Adds Nyaa search buttons to MAL, AniList, and other databases. | [View](./nyaa-linker-userscript.user.js) |
 
 ---
 
