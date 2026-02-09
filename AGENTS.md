@@ -2,48 +2,58 @@
 
 This repository contains a collection of "Agents" (userscripts) that act as intelligent overlays on your web browsing experience. This document describes their capabilities, inputs, outputs, and interaction models.
 
-## 🎵 Spotify LLM Lyrics Translator
+## 🤖 AI & Productivity
 
-**Type**: Active Agent
-**Source**: `spotify-llm-lyrics-translator.user.js`
+### Enable Copy & Right Click
 
-A sophisticated agent that injects itself into the Spotify Web Player to provide real-time lyric translations using Large Language Models (LLMs).
+**Type**: Passive Tool
+**Source**: `enable-copy-and-right-click.user.js`
 
-### Capabilities
--   **Real-time Translation**: Detects non-English lyrics (Japanese, Korean, Chinese, etc.) and translates them on the fly.
--   **Context-Aware**: Uses prompts designed to capture emotional tone and proper nouns.
--   **Smart Caching**: Caches translations locally to minimize API usage and latency.
--   **Smart Skip**: Learns when lyrics are instrumental or untranslatable to avoid wasting tokens.
+Force enables right-click, selection, and copy on restricted sites (whitelist mode by default).
 
-### Interaction
--   **Automatic**: The agent runs automatically when it detects lyrics on the screen.
--   **Configuration Menu** (available via userscript manager menu):
-    -   `🔌 Use [Provider]`: Switch between Groq and Cerebras.
-    -   `🤖 [Provider] Model`: Set specific model IDs (e.g., `llama-3.3-70b-versatile`).
-    -   `🔑 [Provider] API Key`: securely input your API keys.
-    -   `🌡️ Temperature` / `🎲 Top P`: Adjust creativity vs. accuracy.
-    -   `🎨 Text Color`: Customize the translation overlay color.
-    -   `🎯 Smart Skip`: Toggle the intelligent skipping heuristic.
-
-### Input/Output
--   **Input**: Raw lyric lines from Spotify's DOM.
--   **Output**: Translated text lines injected directly below the original lyrics in the Spotify UI.
+#### Interaction
+-   **Passive / Always on**: Works automatically on configured sites.
+-   **Menu Commands**: Toggle between specific modes (Basic/Aggressive) or disable for the current site.
 
 ---
 
-## 📦 Share Archive
+### Grok Rate Limit Display
+
+**Type**: Visual Overlay
+**Source**: `grok-rate-limit-display.user.js`
+
+Adds a HUD to `grok.com` showing remaining queries and reset times.
+
+#### Interaction
+-   **Visual Overlay**: Displays a small box with usage stats.
+
+---
+
+### Nyaa Linker Userscript
+
+**Type**: Enhancement Tool
+**Source**: `nyaa-linker-userscript.user.js`
+
+Adds "Search Nyaa" buttons to anime database sites (MAL, AniList) to quickly find downloads.
+
+#### Interaction
+-   **Visual Button Injection**: Adds clickable buttons next to anime entries on supported sites.
+
+---
+
+### Share Archive
 
 **Type**: Utility Agent
 **Source**: `share-archive.user.js`
 
 A privacy-focused agent that facilitates archiving web pages and sharing clean links. It integrates with `archive.today` mirrors and strips tracking parameters.
 
-### Capabilities
+#### Capabilities
 -   **Link Cleaning**: Removes tracking parameters (UTM, fbc, etc.) before archiving using ClearURLs rules.
 -   **Mirror Management**: Automatically tests and selects the fastest `archive.*` mirror.
 -   **Platform Handlers**: Special handling for YouTube shorts, Google redirects, and more.
 
-### Interaction
+#### Interaction
 -   **Menu Commands**:
     -   `Archive Current Page`: Opens the current page in `archive.today`.
     -   `Search Archive for Page`: Checks if the current page is already archived.
@@ -54,43 +64,95 @@ A privacy-focused agent that facilitates archiving web pages and sharing clean l
 
 ---
 
-## 📺 YouTube Automation Agents
+## 🎵 Spotify
 
-**Type**: Passive Guardrails
-**Source**: `disable-youtube-channel-autoplay.user.js`, `disable-youtube-playlist-autoplay.user.js`
+### Fix Missing Spotify Lyrics
 
-Set-and-forget agents that enforce user preferences on YouTube.
+**Type**: Fallback Agent
+**Source**: `fix-missing-spotify-lyrics.user.js`
 
-### Capabilities
--   **Channel Guard**: Prevents the "featured video" on a channel homepage from blasting audio/video automatically.
--   **Playlist Guard**: Stops video playback at the end of a video and prevents the "Autoplay" toggle from advancing to the next video in a playlist.
+Fetches lyrics from external sources (LRCLIB, lyrics.com) when Spotify has none available.
 
-### Interaction
--   **Passive**: No user interaction required. They run silently in the background.
+#### Interaction
+-   **Automatic Fallback**: Runs automatically when it detects a song with no lyrics on Spotify.
 
 ---
 
-## 🎮 Steam & Gaming Assistants
+### Spotify LLM Lyrics Translator
 
-**Type**: Enhancement Tools
-**Source**: `romheaven-steam-assistant.user.js`, `steam-links-dropdowns.user.js`
+**Type**: Active Agent
+**Source**: `spotify-llm-lyrics-translator.user.js`
 
-Agents that augment Steam Store pages with external data and download options.
+A sophisticated agent that injects itself into the Spotify Web Player to provide real-time lyric translations using Large Language Models (LLMs).
 
-### Capabilities
--   **Romheaven Steam Assistant**: Injects "Clean Steam Files" download buttons directly onto the Steam store page for a game.
--   **Steam Links Dropdowns**: Adds a dropdown menu with quick searches for the current game on various piracy/resource sites (CS.RIN.RU, SteamDB, etc.).
+#### Capabilities
+-   **Real-time Translation**: Detects non-English lyrics (Japanese, Korean, Chinese, etc.) and translates them on the fly.
+-   **Context-Aware**: Uses prompts designed to capture emotional tone and proper nouns.
+-   **Smart Caching**: Caches translations locally to minimize API usage and latency.
+-   **Smart Skip**: Learns when lyrics are instrumental or untranslatable to avoid wasting tokens.
 
-### Interaction
--   **Visual**: Adds new buttons/menus to the Steam interface. Click to use.
+#### Interaction
+-   **Automatic**: The agent runs automatically when it detects lyrics on the screen.
+-   **Configuration Menu** (available via userscript manager menu):
+    -   `🔌 Use [Provider]`: Switch between Groq and Cerebras.
+    -   `🤖 [Provider] Model`: Set specific model IDs (e.g., `llama-3.3-70b-versatile`).
+    -   `🔑 [Provider] API Key`: securely input your API keys.
+    -   `🌡️ Temperature` / `🎲 Top P`: Adjust creativity vs. accuracy.
+    -   `🎨 Text Color`: Customize the translation overlay color.
+    -   `🎯 Smart Skip`: Toggle the intelligent skipping heuristic.
+
+#### Input/Output
+-   **Input**: Raw lyric lines from Spotify's DOM.
+-   **Output**: Translated text lines injected directly below the original lyrics in the Spotify UI.
 
 ---
 
-## 🛠️ Utility Tools
+## 🎮 Steam & Gaming
 
-| Agent Name | Description | Interaction |
-| :--- | :--- | :--- |
-| **Fix Missing Spotify Lyrics** | Fetches lyrics from external sources (LRCLIB) when Spotify has none. | Automatic fallback. |
-| **Grok Rate Limit Display** | Adds a HUD to `grok.com` showing remaining queries and reset times. | Visual overlay. |
-| **Enable Copy & Right Click** | Unlocks right-click and selection on sites that block it. | Passive / Always on. |
-| **Nyaa Linker Userscript** | Adds "Search Nyaa" buttons to anime database sites (MAL, AniList). | Visual button injection. |
+### Romheaven Steam Assistant
+
+**Type**: Enhancement Tool
+**Source**: `romheaven-steam-assistant.user.js`
+
+Injects "Clean Steam Files" download buttons directly onto the Steam store page for a game.
+
+#### Interaction
+-   **Visual Button Injection**: Adds download buttons to the Steam store sidebar.
+
+---
+
+### Steam Links Dropdowns
+
+**Type**: Enhancement Tool
+**Source**: `steam-links-dropdowns.user.js`
+
+Adds a dropdown menu with quick searches for the current game on various piracy/resource sites (CS.RIN.RU, SteamDB, etc.).
+
+#### Interaction
+-   **Visual Menu**: Adds a dropdown menu to the Steam store page.
+
+---
+
+## � YouTube
+
+### Disable YouTube Channel Autoplay
+
+**Type**: Passive Guardrail
+**Source**: `disable-youtube-channel-autoplay.user.js`
+
+Prevents the "featured video" on a channel homepage from blasting audio/video automatically.
+
+#### Interaction
+-   **Passive**: Runs silently in the background when visiting a channel page.
+
+---
+
+### Disable YouTube Playlist Autoplay
+
+**Type**: Passive Guardrail
+**Source**: `disable-youtube-playlist-autoplay.user.js`
+
+Stops video playback at the end of a video and prevents the "Autoplay" toggle from advancing to the next video in a playlist.
+
+#### Interaction
+-   **Passive**: Runs silently in the background when watching a playlist.
