@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Romheaven Steam Assistant Fork
 // @namespace    https://romheaven.com/faq
-// @version      1.3.2
+// @version      1.3.3
 // @description  Download Clean Steam Files directly from a game's store page
 // @author       Antigravity
 // @match        https://store.steampowered.com/app/*

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Grok Rate Limit Display Fork
 // @namespace    https://greasyfork.org/en/scripts/558017-grok-rate-limit-display
-// @version      1.1.5
+// @version      1.1.6
 // @description  Displays remaining queries and cooldowns on grok.com.
 // @author       Antigravity, KHROTU, ported from Blankspeaker & CursedAtom
 // @match        https://grok.com/*

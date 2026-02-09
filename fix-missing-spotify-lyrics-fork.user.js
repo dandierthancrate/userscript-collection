@@ -6,7 +6,7 @@
 // @grant        GM_xmlhttpRequest
 // @connect      lrclib.net
 // @connect      lyrics.com
-// @version      1.1.3
+// @version      1.1.4
 // @author       Antigravity
 // @description  Fetches missing lyrics from LRCLIB/lyrics.com when Spotify has none
 // @license      GPL-3.0-or-later

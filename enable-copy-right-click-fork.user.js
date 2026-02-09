@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Enable Copy & Right Click Fork
 // @namespace    https://greasyfork.org/en/scripts/23772-absolute-enable-right-click-copy
-// @version      1.9.3
+// @version      1.9.4
 // @description  Force enable right click, copy, paste, and text selection (whitelist mode)
 // @author       Antigravity
 // @match        *://*/*

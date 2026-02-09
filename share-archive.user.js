@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Share Archive
 // @namespace    https://docs.scriptcat.org/
-// @version      1.3.2
+// @version      1.3.3
 // @description  Share current page or links to archive.today (removes tracking params)
 // @author       Antigravity
 // @match        *://*/*
