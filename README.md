@@ -1,13 +1,14 @@
 # 🛠️ Userscript Collection
 
-A curated collection of lean, high-performance userscripts designed to enhance your web experience. Enhanced for **ScriptCat**, but compatible with **Tampermonkey**, **Violentmonkey**, and other major managers on Chromium-based browsers.
-
 > [!IMPORTANT]
-> These scripts are developed and tested primarily on **Brave Browser**. While they target Chromium-based browsers, behavior on other engines or browsers may vary.
+> **Tested Environment**: Developed and tested exclusively on **Brave Browser** using the **ScriptCat** manager.
+> While these scripts target Chromium-based browsers, their behavior on other browsers or userscript managers is not guaranteed.
+
+A curated collection of lean, high-performance userscripts designed to enhance your web experience.
 
 ## 📥 Installation
 
-1. Install a userscript manager like [ScriptCat](https://scriptcat.org/), [Tampermonkey](https://www.tampermonkey.net/), or [Violentmonkey](https://violentmonkey.github.io/).
+1. Install a userscript manager compatible with your browser.
 2. Click the **Install** button next to a script below to trigger a one-click installation.
 
 ---
