@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.1.4
 // @description  Fetches missing lyrics from LRCLIB/lyrics.com when Spotify has none
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        https://open.spotify.com/*
 // @grant        GM_xmlhttpRequest
 // @connect      lrclib.net

@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.3.3
 // @description  Share current page or links to archive.today (removes tracking params)
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @grant        GM_openInTab

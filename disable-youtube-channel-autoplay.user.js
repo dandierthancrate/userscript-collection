@@ -5,7 +5,7 @@
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-start
 // @version      1.0.11
-// @author       Antigravity
+// @author       dandierthancrate
 // @description  Prevents featured videos from autoplaying on channel pages
 // @license      MIT
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-channel-autoplay.user.js

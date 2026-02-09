@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.2.6
 // @description  Adds dropdown menus with game download and cheat links on Steam app pages
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        https://store.steampowered.com/app/*
 // @icon         https://store.steampowered.com/favicon.ico
 // @grant        GM_addStyle

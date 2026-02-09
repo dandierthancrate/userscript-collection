@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      2.5.3
 // @description  Adds a button to Anime and Manga database websites that opens a relevant Nyaa search
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        *://*.myanimelist.net/*
 // @match        *://*.anilist.co/*
 // @match        *://*.kitsu.app/*

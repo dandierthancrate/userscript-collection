@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      2.20.2
 // @description  Translates Spotify lyrics using LLM API.
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        https://open.spotify.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue

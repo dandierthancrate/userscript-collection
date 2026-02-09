@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.3.3
 // @description  Download Clean Steam Files directly from a game's store page
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        https://store.steampowered.com/app/*
 // @icon         https://store.steampowered.com/favicon.ico
 // @grant        GM_addStyle

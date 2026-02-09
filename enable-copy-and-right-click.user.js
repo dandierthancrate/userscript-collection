@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.9.4
 // @description  Force enable right click, copy, paste, and text selection (whitelist mode)
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue

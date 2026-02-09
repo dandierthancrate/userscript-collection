@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.0.11
 // @description  Stops video at end, prevents playlist auto-advance
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        https://www.youtube.com/*
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-idle

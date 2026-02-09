@@ -3,7 +3,7 @@
 // @namespace    https://docs.scriptcat.org/
 // @version      1.1.6
 // @description  Displays remaining queries and cooldowns on grok.com.
-// @author       Antigravity
+// @author       dandierthancrate
 // @match        https://grok.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=grok.com
 // @grant        GM_addStyle
