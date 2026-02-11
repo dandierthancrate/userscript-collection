@@ -1,7 +1,7 @@
 # AGENTS.md — Technical Codebase Reference
 
 > **Purpose**: Complete technical reference for AI agents and developers working on this codebase.
-> All scripts are standalone, no-build ES6+ userscripts targeting Chromium/V8 via ScriptCat and compatible managers.
+> All scripts are standalone, no-build ES6+ userscripts targeting Brave/V8 via ScriptCat.
 
 ---
 
@@ -20,7 +20,7 @@ userscript-collection/
 ├── disable-youtube-playlist-autoplay.user.js 103 LOC v1.0.12
 ├── disable-youtube-channel-autoplay.user.js  41 LOC  v1.0.12
 ├── README.md
-├── LICENSE                                  MIT
+├── LICENSE                                  GPL-3.0-or-later
 └── AGENTS.md                                (this file)
 ```
 
@@ -117,7 +117,7 @@ All scripts follow this exact header order:
 ```
 
 - `@namespace` is always `https://github.com/dandierthancrate/userscript-collection`
-- `@license` is always `MIT`
+- `@license` is always `GPL-3.0-or-later`
 - `@updateURL` / `@downloadURL` point to `raw.githubusercontent.com/.../main/<filename>`
 
 ---

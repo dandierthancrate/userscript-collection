@@ -16,7 +16,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
-// @license      MIT
+// @license      GPL-3.0-or-later
 // @run-at       document-end
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-userscript.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-userscript.user.js

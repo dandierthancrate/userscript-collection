@@ -9,7 +9,7 @@
 // @connect      lrclib.net
 // @connect      lyrics.com
 // @run-at       document-idle
-// @license      MIT
+// @license      GPL-3.0-or-later
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/fix-missing-spotify-lyrics.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/fix-missing-spotify-lyrics.user.js
 // ==/UserScript==
