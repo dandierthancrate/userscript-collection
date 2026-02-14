@@ -10,5 +10,5 @@ FOR MY PERSONAL USE
 | Nyaa Linker Userscript | [Install](https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/nyaa-linker-userscript.user.js) |
 | Romheaven Steam Assistant | [Install](https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant.user.js) |
 | Share Archive | [Install](https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/share-archive.user.js) |
-| Spotify LLM Lyrics Translator | [Install](https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm-lyrics-translator.user.js) |
+| Spotify LLM | [Install](https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm.user.js) |
 | Steam Links Dropdowns | [Install](https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/steam-links-dropdowns.user.js) |
