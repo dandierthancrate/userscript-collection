@@ -353,8 +353,8 @@ const SITES = [
                 handleMB({
                     element_id: ratings.id, name: 'ratings',
                     series: {
-                        romanized_title: cardType ? card.querySelector('div.line-clamp-2[title]')?.title : document.querySelector('h2')?.innerHTML,
-                        title: cardType ? card.querySelector('a.line-clamp-2[title]')?.title : document.querySelector('h1')?.innerHTML,
+                        romanized_title: cardType ? card.querySelector('div.line-clamp-2[title]')?.title : document.querySelector('h2')?.textContent,
+                        title: cardType ? card.querySelector('a.line-clamp-2[title]')?.title : document.querySelector('h1')?.textContent,
                     },
                     list_config: { mode: 'list_dense' }
                 }, cardType, cat);
@@ -435,6 +435,7 @@ function createSearch(btn, query, settings) {
     
     btn.href = `https://${sub}nyaa.si/?f=${settings.filter_setting}&c=${finalCat}&q=${cleanQuery}${speed}${custom}&s=${finalSort}&o=${settings.order_setting}`;
     btn.target = '_blank';
+    btn.rel = 'noopener noreferrer';
 }
 
 function setupHotkey(ctx) {

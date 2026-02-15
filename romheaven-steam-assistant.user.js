@@ -194,6 +194,10 @@
     renderSuccess(entry, buildId) {
       const { install_dir, build, pixeldrain, archive_size } = entry;
 
+      if (!/^[a-zA-Z0-9_\-\. ]+$/.test(install_dir)) {
+        return this.setError('⚠️ Security: Invalid file name.', null);
+      }
+
       this.els.size.textContent = '';
       this.els.size.append('📦 File Size: ');
       const sizeStrong = document.createElement('strong');

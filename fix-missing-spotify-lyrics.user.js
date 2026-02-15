@@ -81,8 +81,13 @@
     if (!songMatch) return null;
 
     const songHtml = await gmFetch(`https://www.lyrics.com${songMatch[1]}`);
-    const lyricsMatch = songHtml.match(/<pre id="lyric-body-text"[^>]*>([\s\S]*?)<\/pre>/);
-    return lyricsMatch?.[1].replace(/<a[^>]*>|<\/a>/g, '').trim() || null;
+    const doc = new DOMParser().parseFromString(songHtml, 'text/html');
+    const el = doc.querySelector('#lyric-body-text');
+    if (el) {
+      el.querySelectorAll('script, style').forEach(e => e.remove());
+      return el.textContent.trim();
+    }
+    return null;
   };
 
   const PROVIDERS = [
