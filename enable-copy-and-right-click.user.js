@@ -17,7 +17,9 @@
 
 (() => {
     'use strict';
-    if (window !== window.top) return;
+
+    // Only run main functionality in top-level windows
+    const shouldRunMainFunctionality = (window === window.top);
 
     const HOST = location.hostname;
     const BASIC_EVENTS = ['contextmenu', 'selectstart', 'dragstart', 'copy', 'cut', 'paste'];
@@ -122,6 +124,10 @@
     const App = {
         init: () => {
             App.registerMenu();
+            
+            // Only run main functionality in top-level windows
+            if (!shouldRunMainFunctionality) return;
+            
             const mode = getCurrentMode();
             if (mode === MODES.OFF) return;
 
