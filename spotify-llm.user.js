@@ -45,6 +45,7 @@
     const KATAKANA = /[\u30A0-\u30FF]/;
     const CJK_UNIFIED = /[\u4E00-\u9FFF]/;
     const HANGUL = /[\uAC00-\uD7AF]/;
+    const COMPARISON_REGEX = /[^\p{L}\p{N}]/gu;
 
     function needsTranslation(line) {
         if (!line || line.trim().length === 0) return false;
@@ -53,14 +54,13 @@
     }
 
     function detectBatchLanguage(lines) {
-        let ja = 0, ko = 0, zh = 0;
+        let ko = 0, zh = 0;
         for (const line of lines) {
             // Precise detection for prompt selection
-            if (HIRAGANA.test(line) || KATAKANA.test(line)) ja++;
-            else if (HANGUL.test(line)) ko++;
+            if (HIRAGANA.test(line) || KATAKANA.test(line)) return 'ja';
+            if (HANGUL.test(line)) ko++;
             else if (CJK_UNIFIED.test(line)) zh++;
         }
-        if (ja > 0) return 'ja';
         if (ko > 0) return 'ko';
         if (zh > 0) return 'zh';
         return 'unknown';
@@ -417,7 +417,7 @@ NOTE: Already English.
         if (cached) return cached;
         if (comparisonCache.size > 2000) comparisonCache.clear();
 
-        const result = str.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+        const result = str.toLowerCase().replace(COMPARISON_REGEX, '');
         comparisonCache.set(str, result);
         return result;
     }
@@ -679,7 +679,7 @@ NOTE: Already English.
             setTimeout(() => updateStatus("", false), 1500);
         }
         if (batch.length === 0) {
-            processQueueLoop();
+            setTimeout(processQueueLoop, 0);
             return;
         }
 
