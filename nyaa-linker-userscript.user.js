@@ -566,11 +566,12 @@ settings = Storage.load();
 currentPage = window.location.href.split('/')[4];
 init();
 
-const observer = new MutationObserver(() => {
+// Bolt: Optimized URL change detection using Polling (500ms) instead of global MutationObserver
+// This is robust against sandbox isolation issues and SPA lifecycles while being much lighter than MutationObserver.
+setInterval(() => {
   if (window.location.href.split('/')[4] !== currentPage) {
     currentPage = window.location.href.split('/')[4];
     removeNyaaBtns();
     init();
   }
-});
-observer.observe(document.body, { childList: true, subtree: true });
+}, 500);
