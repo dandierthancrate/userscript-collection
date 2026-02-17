@@ -28,3 +28,21 @@ yarn.lock
 *.log
 *.tmp
 *.bak
+
+# Test coverage and artifacts
+coverage/
+.nyc_output/
+*.lcov
+*.profraw
+*.profdata
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Build outputs
+dist/
+build/
+*.min.js
+
+# Jules CLI
+.jules-cli/
