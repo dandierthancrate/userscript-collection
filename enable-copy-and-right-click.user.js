@@ -106,8 +106,9 @@
             };
         },
 
-        clearInline: () => {
-            const targets = [document, document.body, ...document.querySelectorAll('*')];
+        clearInline: (root = document) => {
+            const elements = root.querySelectorAll ? [...root.querySelectorAll('*')] : [];
+            const targets = [root, ...elements];
             const handlers = BASIC_EVENTS.map(e => 'on' + e);
             targets.forEach(el => {
                 if (!el) return;
@@ -143,9 +144,16 @@
             // Phase 2: DOM Ready Cleanup
             const onReady = () => {
                 EventManager.clearInline();
-                const observer = new MutationObserver(() => {
-                    document.querySelectorAll('[draggable=true]').forEach(el => el.draggable = false);
-                    if (mode === MODES.AGGRESSIVE) EventManager.clearInline();
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(mutation => {
+                        mutation.addedNodes.forEach(node => {
+                            if (node.nodeType === 1) { // Element
+                                if (node.matches('[draggable=true]')) node.draggable = false;
+                                node.querySelectorAll('[draggable=true]').forEach(el => el.draggable = false);
+                                if (mode === MODES.AGGRESSIVE) EventManager.clearInline(node);
+                            }
+                        });
+                    });
                 });
                 observer.observe(document.body, { childList: true, subtree: true });
             };
