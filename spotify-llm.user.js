@@ -378,15 +378,30 @@ NOTE: Already English.
         #llm-status.visible { opacity: 1; }
         #llm-status.error { border-color: #ff4444; color: #ffcccc; }
         #llm-status.cached { border-color: #44ff44; color: #ccffcc; }
+        @keyframes llm-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .llm-spinner {
+            display: inline-block; width: 12px; height: 12px;
+            border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
+            border-top-color: #fff; animation: llm-spin 1s linear infinite;
+            margin-right: 8px; vertical-align: -2px;
+        }
     `);
 
     const statusEl = document.createElement('div');
     statusEl.id = 'llm-status';
+    statusEl.setAttribute('role', 'status');
+    statusEl.setAttribute('aria-live', 'polite');
     document.body.appendChild(statusEl);
     updateCssVariables();
 
     function updateStatus(msg, isVisible = true, isError = false, isCached = false) {
-        statusEl.textContent = msg;
+        statusEl.innerHTML = '';
+        if (isVisible && !isError && !isCached && msg.startsWith('Translating')) {
+            const spinner = document.createElement('span');
+            spinner.className = 'llm-spinner';
+            statusEl.appendChild(spinner);
+        }
+        statusEl.appendChild(document.createTextNode(msg));
         statusEl.classList.toggle('visible', isVisible);
         statusEl.classList.toggle('error', isError);
         statusEl.classList.toggle('cached', isCached);
