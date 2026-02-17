@@ -425,15 +425,25 @@ function createSearch(btn, query, settings) {
     const cat = isSpicy && btn.dataset.cat === '1_2' ? '1_1' : (btn.dataset.cat || settings.category_setting); 
     
     if (!btn.title) btn.textContent = `Search on ${isSpicy ? 'Sukebei' : 'Nyaa'}`;
-    const cleanQuery = query ? query.replace(/&/g, '%26').replace(/\+/g, '%2B') : '';
-    const custom = settings.custom_text_toggle_setting ? settings.custom_text_setting : '';
-    const speed = custom && !cleanQuery.endsWith('"') ? ' ' : '';
+
+    const url = new URL(`https://${sub}nyaa.si/`);
     
     // Validate required params to avoid 400 Bad Request
     const finalCat = cat || '1_2';
     const finalSort = settings.sort_setting || 'id';
     
-    btn.href = `https://${sub}nyaa.si/?f=${settings.filter_setting}&c=${finalCat}&q=${cleanQuery}${speed}${custom}&s=${finalSort}&o=${settings.order_setting}`;
+    url.searchParams.set('f', settings.filter_setting);
+    url.searchParams.set('c', finalCat);
+
+    const qVal = query || '';
+    const custom = settings.custom_text_toggle_setting ? settings.custom_text_setting : '';
+    const speed = custom && !qVal.endsWith('"') ? ' ' : '';
+
+    url.searchParams.set('q', qVal + speed + custom);
+    url.searchParams.set('s', finalSort);
+    url.searchParams.set('o', settings.order_setting);
+
+    btn.href = url.toString();
     btn.target = '_blank';
     btn.rel = 'noopener noreferrer';
 }
