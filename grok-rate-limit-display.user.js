@@ -287,6 +287,7 @@
           this.appendDivider(content);
           this.appendSpan(content, low);
           this.container.title = isFree && cost > 1 ? `High: ${high} (${origHigh} tokens ÷ ${cost}) | Low: ${low}` : `High: ${high} | Low: ${low}`;
+          this.container.setAttribute('aria-label', `High effort: ${high} remaining. Low effort: ${low} remaining. Click to refresh.`);
           setGauge();
         } else if (wait > 0) {
           this.startCountdown(wait, this.appendSpan(content, Utils.formatTimer(wait), '#ff6347'));
@@ -294,7 +295,11 @@
             this.appendDivider(content);
             this.appendSpan(content, low);
             this.container.title = `High: Resetting | Low: ${low}`;
-          } else this.container.title = 'Time until reset';
+            this.container.setAttribute('aria-label', `High effort resetting in ${Utils.formatTimer(wait)}. Low effort: ${low} remaining. Click to refresh.`);
+          } else {
+            this.container.title = 'Time until reset';
+            this.container.setAttribute('aria-label', `Resetting in ${Utils.formatTimer(wait)}. Click to refresh.`);
+          }
           setClock();
         } else {
           this.appendSpan(content, '0', '#ff6347');
@@ -302,6 +307,7 @@
             this.appendDivider(content);
             this.appendSpan(content, low);
             this.container.title = `High: Limit reached | Low: ${low}`;
+            this.container.setAttribute('aria-label', `High effort limit reached. Low effort: ${low} remaining. Click to refresh.`);
           }
           setGauge();
         }
@@ -310,14 +316,17 @@
         if (remaining > 0) {
           this.appendSpan(content, remaining);
           this.container.title = isFree && cost > 1 ? `${remaining} (${origRaw} tokens ÷ ${cost})` : `${remaining} remaining`;
+          this.container.setAttribute('aria-label', `${remaining} queries remaining. Click to refresh.`);
           setGauge();
         } else if (wait > 0) {
           this.startCountdown(wait, this.appendSpan(content, Utils.formatTimer(wait), '#ff6347'));
           this.container.title = 'Time until reset';
+          this.container.setAttribute('aria-label', `Resetting in ${Utils.formatTimer(wait)}. Click to refresh.`);
           setClock();
         } else {
           this.appendSpan(content, '0', '#ff6347');
           this.container.title = 'Limit reached';
+          this.container.setAttribute('aria-label', 'Limit reached. Click to refresh.');
           setGauge();
         }
       }
@@ -331,6 +340,7 @@
     renderError(content, svg, data, effort) {
       this.appendSpan(content, 'Unavailable');
       this.container.title = data.reason || 'Error';
+      this.container.setAttribute('aria-label', `Rate limit status: ${data.reason || 'Error'}. Click to refresh.`);
       const path = Utils.createSVG('path', ICONS.GAUGE.attrs);
       svg.replaceChildren(path);
     }
