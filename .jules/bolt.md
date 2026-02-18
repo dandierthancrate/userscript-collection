@@ -23,3 +23,7 @@
 ## 2025-05-17 - Global MutationObserver vs Polling for URL Detection
 **Learning:** Using a global `MutationObserver` on `document.body` with `subtree: true` to detect URL changes in SPAs is extremely inefficient as it fires on every DOM mutation. History API patching is complex due to userscript sandbox isolation (`window` vs `unsafeWindow`) and race conditions with SPA rendering.
 **Action:** Replace global `MutationObserver` URL checks with a lightweight `setInterval` polling mechanism (e.g., 500ms). This is robust, handles SPA lifecycles gracefully, avoids sandbox complexity, and significantly reduces CPU overhead.
+
+## 2025-05-18 - Scoped MutationObserver Queries
+**Learning:** Calling `document.querySelectorAll('*')` inside a `MutationObserver` callback makes every single DOM insertion O(N) where N is the total number of nodes in the document, causing severe performance degradation on large pages or during infinite scrolling.
+**Action:** Always iterate `mutation.addedNodes` and scope queries to the specific added node (e.g., `node.querySelectorAll(...)`) to make updates proportional only to the size of the added content.
