@@ -24,6 +24,8 @@
     .sld-panel a:hover{background:#c7d5e0;color:#1b2838;border-radius:2px}
     .sld-header{padding:6px 12px 4px;color:#5b9ace;font-weight:bold;font-size:11px;text-transform:uppercase;border-top:1px solid #3a3f44}
     .sld-header:first-child{border-top:none}
+    @keyframes sld-node-inserted { from { opacity: 0.99; } to { opacity: 1; } }
+    .apphub_OtherSiteInfo { animation: sld-node-inserted 0.001s; }
   `;
 
   const DROPDOWNS = [
@@ -146,18 +148,13 @@
     }
   };
 
-  const hub = document.querySelector('.apphub_OtherSiteInfo');
-  if (hub) {
-    initDropdowns(hub);
-  } else {
-    new MutationObserver((_, obs) => {
-      const found = document.querySelector('.apphub_OtherSiteInfo');
-      if (found) {
-        obs.disconnect();
-        initDropdowns(found);
-      }
-    }).observe(document.body, { childList: true, subtree: true });
-  }
+  // Bolt: Optimized element detection using CSS Animation instead of global MutationObserver
+  // This removes the O(N) overhead on every DOM mutation.
+  document.addEventListener('animationstart', (e) => {
+    if (e.animationName === 'sld-node-inserted') {
+      initDropdowns(e.target);
+    }
+  });
 
   GM_addStyle(STYLES);
 })();
