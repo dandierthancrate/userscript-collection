@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spotify LLM
 // @namespace    https://github.com/dandierthancrate/userscript-collection
-// @version      2.20.3
+// @version      2.21.0
 // @description  Translates Spotify lyrics using LLM API.
 // @author       dandierthancrate
 // @match        https://open.spotify.com/*
@@ -32,7 +32,7 @@
         OBSERVER_THROTTLE_MS: 500,
         SMART_SKIP_THRESHOLD: 0.65,
         // Default LLM Parameters
-        DEFAULT_TEMPERATURE: 0.6,
+        DEFAULT_TEMPERATURE: 1,
         DEFAULT_TOP_P: 0.95,
         DEFAULT_MAX_COMPLETION_TOKENS: 2048
     };
@@ -71,88 +71,51 @@
     }
 
     function getPrompt(sourceLang) {
-        const SHARED_PREAMBLE = `You are a professional song lyrics translator. Translate Asian languages to English.
+        const SHARED_PREAMBLE = `Senior Lyrics Translator: 10+ years CJK→English for Spotify/Apple Music/Musixmatch.
 
-<OUTPUT_FORMAT>
-Return ONLY raw JSON. Example: {"id_1": "translated line", "id_2": "SKIP"}
-</OUTPUT_FORMAT>
+METHODOLOGY:
+- Meaning over literal | One line in → one line out | Match tone exactly
+- Preserve ambiguity over inventing specifics | Creative translation > word-for-word
 
-<RULES priority="critical">
-1. OUTPUT: Return raw JSON only. No markdown. No commentary.
-2. MAPPING: Output exactly one translation per input ID. Use "SKIP" for untranslatable lines.
-3. SKIP_WHEN: Line contains ♪ or is already English.
-</RULES>
+CONSTRAINTS:
+- One translation per input ID | Max 1000 chars/line
+- Never merge or split lines
+- Keep brand names, product names, city names untranslated (Diet Pepsi → Diet Pepsi)
+- Keep untranslatable words as-is or transliterate
 
-<RULES priority="formatting">
-4. SYMBOLS: Copy all source punctuation exactly (「」。、・♪★). Keep original symbols.
-5. CAPITALIZATION: Capitalize line starts only when grammatically correct.
-6. ABBREVIATIONS: Use full words. Write "question and answer" not "Q&A".
-</RULES>
-
-<RULES priority="translation">
-7. TONE: Match the original emotional tone and register.
-8. FLOW: Preserve sentence fragments. If source line is incomplete, output incomplete translation.
-9. PHRASING: Use natural spoken English. Rephrase stiff structures. Keep meaning intact.
-10. PROPER_NOUNS: Keep romanized names (Yuki, Jihoon). Preserve intentional wordplay.
-</RULES>
-
-<EXAMPLES>
-INPUT: {"id_1": "僕は君を探している"}
-OUTPUT: {"id_1": "I'm searching for you"}
-
-INPUT: {"id_2": "ぱっぱらぱー"}
-OUTPUT: {"id_2": "pa-pa-ra-pa"}
-NOTE: Sound effects stay as-is.
-
-INPUT: {"id_3": "夢の迷路の果て"}
-OUTPUT: {"id_3": "At the end of the dream's maze"}
-NOTE: Preserve poetic ambiguity.
-
-INPUT: {"id_4": "ドキドキしちゃって"}
-OUTPUT: {"id_4": "My heart is pounding"}
-NOTE: Translate onomatopoeia meaning, not sound.
-
-INPUT: {"id_5": "You are KING"}
-OUTPUT: {"id_5": "SKIP"}
-NOTE: Already English.
-</EXAMPLES>`;
+OUTPUT: Raw JSON only. Format: {"id": "translation"} or {"id": "SKIP"}
+SKIP when: line contains ♪ or already English`;
 
         const RULES = {
-            ja: `<SOURCE_LANGUAGE>Japanese</SOURCE_LANGUAGE>
-
-<LANGUAGE_RULES>
-1. PARTICLES: は=topic, が=subject, を=object, に=direction, で=means/location.
-2. VERB_ENDINGS: -たい=want, -てしまう=regrettably, -ている=ongoing.
-3. HONORIFICS: Reflect -さん/-くん/-ちゃん/-様 relationships in tone.
-4. ONOMATOPOEIA: Translate the meaning (ドキドキ→heart pounding).
-5. HIDDEN_SUBJECTS: Infer omitted I/You/We from context. Stay consistent.
-6. FINAL_PARTICLES: よ=assertion, ね=agreement, か=question, な=reflection.
-7. COMPOUNDS: Translate meaning (問答→dialogue, not "question-answer").
-</LANGUAGE_RULES>`,
-            ko: `<SOURCE_LANGUAGE>Korean</SOURCE_LANGUAGE>
-
-<LANGUAGE_RULES>
-1. SPEECH_LEVELS: 해요체=polite, 반말=casual. Reflect in tone.
-2. PARTICLES: 은/는=topic, 이/가=subject, 을/를=object, 에/에서=location.
-3. VERB_ENDINGS: -고 싶다=want, -아/어 버리다=completely, -고 있다=ongoing.
-4. ADDRESS_TERMS: Reflect -님/-씨/오빠/언니 relationships in tone.
-5. KONGLISH: Translate to natural English (스킬→skill, 파이팅→fighting spirit).
-6. FINAL_PARTICLES: 요=polite, 네=gentle, 지=confirmation.
-7. CONTRACTIONS: 뭐=무엇, 걔=그 아이. Understand spoken forms.
-</LANGUAGE_RULES>`,
-            zh: `<SOURCE_LANGUAGE>Chinese</SOURCE_LANGUAGE>
-
-<LANGUAGE_RULES>
-1. MEASURE_WORDS: Omit unless meaningful.
-2. ASPECT_MARKERS: 了=completed, 着=ongoing, 过=experienced.
-3. CLASSICAL: Translate 文言文 by meaning, not word-by-word.
-4. CHENGYU: Translate idiom meaning (一见钟情→love at first sight).
-5. PARTICLES: 的=possessive, 了=state change, 吗=question, 呢=continuation.
-6. REDUPLICATION: 慢慢=slowly/gently. Convey emotional emphasis.
-7. CONTEXT: Infer tense/plurality from surrounding lines.
-</LANGUAGE_RULES>`
+            ja: `
+JAPANESE:
+- Particles: は(topic), が(subject), を(object), に(direction), で(means/location)
+- Verb endings: -たい(want), -てしまう(regret), -ている(ongoing)
+- Honorifics: reflect -さん/-くん/-ちゃん/-様 in tone
+- Onomatopoeia: translate meaning (ドキドキ→heart pounding)
+- Infer omitted subjects (I/you/we) from context
+- Final particles: よ(assert), ね(agree), か(question), な(reflect)
+- Compounds: translate meaning not components (問答→dialogue)`,
+            ko: `
+KOREAN:
+- Speech levels: 해요체(polite), 반말(casual) — reflect in tone
+- Particles: 은/는(topic), 이/가(subject), 을/를(object), 에/에서(location)
+- Verb endings: -고 싶다(want), -아/어 버리다(completely), -고 있다(ongoing)
+- Address terms: reflect -님/-씨/오빠/언니 relationships in tone
+- Konglish: translate to natural English (스킬→skill, 파이팅→fighting spirit)
+- Final particles: 요(polite), 네(gentle), 지(confirmation)
+- Contractions: 뭐=무엇, 걔=그 아이. Understand spoken forms`,
+            zh: `
+CHINESE:
+- Measure words: omit unless meaningful
+- Aspect markers: 了(completed), 着(ongoing), 过(experienced)
+- Classical: translate 文言文 by meaning, not word-by-word
+- Chengyu idioms: translate meaning (一见钟情→love at first sight)
+- Particles: 的(possessive), 了(state change), 吗(question), 呢(continuation)
+- Reduplication: 慢慢=slowly/gently. Convey emotional emphasis
+- Context: infer tense/plurality from surrounding lines`
         };
-        return SHARED_PREAMBLE + "\n\n" + (RULES[sourceLang] || "");
+        return SHARED_PREAMBLE + (RULES[sourceLang] || "");
     }
 
     function getCurrentTrackInfo() {
