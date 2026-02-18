@@ -148,19 +148,34 @@
     inject(target) {
       const box = document.createElement('div');
       box.id = 'rh-box';
-      box.innerHTML = `
-        <div class="rh-header"></div>
-        <h3>Download from Romheaven</h3>
-        <p id="rh-status">Checking build versions...</p>
-        <p id="rh-size"></p>
-        <div id="rh-downloads"></div>
-      `;
+
+      const header = document.createElement('div');
+      header.className = 'rh-header';
+      box.appendChild(header);
+
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Download from Romheaven';
+      box.appendChild(h3);
+
+      const status = document.createElement('p');
+      status.id = 'rh-status';
+      status.textContent = 'Checking build versions...';
+      box.appendChild(status);
+
+      const size = document.createElement('p');
+      size.id = 'rh-size';
+      box.appendChild(size);
+
+      const downloads = document.createElement('div');
+      downloads.id = 'rh-downloads';
+      box.appendChild(downloads);
+
       target.insertAdjacentElement('afterend', box);
       
       this.els = {
-        status: box.querySelector('#rh-status'),
-        size: box.querySelector('#rh-size'),
-        dl: box.querySelector('#rh-downloads')
+        status: status,
+        size: size,
+        dl: downloads
       };
     }
 
@@ -177,7 +192,7 @@
     setError(msg, retryCb) {
       this.setStatus(msg, '#ff6b6b');
       this.els.size.textContent = '';
-      this.els.dl.innerHTML = '';
+      this.els.dl.textContent = '';
       if (retryCb) this.createBtn('🔄 Retry', 'rh-btn-retry', null, retryCb);
     }
 
@@ -185,7 +200,13 @@
       const el = document.createElement(href ? 'a' : 'button');
       el.textContent = text;
       el.className = `rh-btn ${cls}`;
-      if (href) { el.href = href; if (cls.includes('secondary')) { el.target = '_blank'; el.rel = 'noopener'; } }
+      if (href) {
+        el.href = href;
+        if (cls.includes('secondary')) {
+          el.target = '_blank';
+          el.rel = 'noopener noreferrer';
+        }
+      }
       if (onClick) el.onclick = onClick;
       this.els.dl.appendChild(el);
       return el;
@@ -231,6 +252,7 @@
           const link = document.createElement('a');
           link.href = `https://steamdb.info/patchnotes/${build}`;
           link.target = '_blank';
+          link.rel = 'noopener noreferrer';
           link.style.color = '#66c0f4';
           link.textContent = `(${build})`;
           msg.appendChild(link);
@@ -257,7 +279,7 @@
       ui.inject(target);
 
       const load = async () => {
-        ui.els.dl.innerHTML = '';
+        ui.els.dl.textContent = '';
         ui.setStatus('Checking build versions...', '#d1d8e0');
         
         try {
