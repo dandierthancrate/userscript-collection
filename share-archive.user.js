@@ -364,6 +364,12 @@
 
         try {
             const urlObj = new URL(cleanedUrl);
+
+            // Sentinel Security: Block unsafe protocols (e.g., javascript:, data:, file:)
+            if (!['http:', 'https:'].includes(urlObj.protocol)) {
+                return null;
+            }
+
             const host = urlObj.hostname.toLowerCase();
 
             for (const { match, handle } of PLATFORM_HANDLERS) {
@@ -389,7 +395,8 @@
             urlObj.hash = '';
             return urlObj.toString();
         } catch {
-            return cleanedUrl;
+            // Return null for invalid URLs instead of potentially unsafe string
+            return null;
         }
     }
 
@@ -403,6 +410,10 @@
 
     function archiveUrl(url) {
         const cleaned = cleanUrl(url);
+        if (!cleaned) {
+            alert('Share Archive: Invalid URL protocol.');
+            return;
+        }
         if (!isArchivable(cleaned)) {
             alert('Share Archive: This URL is not archivable.');
             return;
@@ -412,6 +423,7 @@
 
     function searchUrl(url) {
         const cleaned = cleanUrl(url);
+        if (!cleaned) return;
         GM_openInTab(MirrorManager.getSearchUrl(cleaned), { active: true });
     }
 
