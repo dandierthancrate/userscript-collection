@@ -8,6 +8,9 @@ desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*.swo
+*~
 
 # Node.js
 node_modules/
@@ -28,6 +31,7 @@ yarn.lock
 *.log
 *.tmp
 *.bak
+*.orig
 
 # Test coverage and artifacts
 coverage/
@@ -46,6 +50,10 @@ build/
 
 # Jules CLI
 .jules-cli/
+
+# Userscript development
+*.user.js.backup
+*.user.js.bak
 
 # Misc
 idea/
