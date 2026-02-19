@@ -277,21 +277,35 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
 
         GM_registerMenuCommand(`🤖 ${p.name} Model`, () => {
             const current = Storage.get(p.modelStorage) || '';
-            const m = prompt(`Enter ${p.name} Model ID:`, current);
-            if (m) {
-                Storage.set(p.modelStorage, m.trim());
-                if (getCurrentProvider() === pid) state.model = m.trim();
-                alert(`${p.name} Model Saved!`);
+            const m = prompt(`Enter ${p.name} Model ID:\n\n(Leave empty to reset to default)`, current);
+            if (m !== null) {
+                const trimmed = m.trim();
+                if (trimmed === '') {
+                    Storage.set(p.modelStorage, null);
+                    if (getCurrentProvider() === pid) state.model = '';
+                    alert(`${p.name} Model reset to default (empty)`);
+                } else {
+                    Storage.set(p.modelStorage, trimmed);
+                    if (getCurrentProvider() === pid) state.model = trimmed;
+                    alert(`${p.name} Model Saved!`);
+                }
             }
         });
 
         GM_registerMenuCommand(`🔑 ${p.name} API Key`, () => {
             const current = Storage.get(p.keyStorage) || '';
-            const key = prompt(`Enter ${p.name} API Key:`, current);
-            if (key) {
-                Storage.set(p.keyStorage, key.trim());
-                if (getCurrentProvider() === pid) state.apiKey = key.trim();
-                alert(`${p.name} API Key Saved!`);
+            const key = prompt(`Enter ${p.name} API Key:\n\n(Leave empty to clear)`, current);
+            if (key !== null) {
+                const trimmed = key.trim();
+                if (trimmed === '') {
+                    Storage.set(p.keyStorage, '');
+                    if (getCurrentProvider() === pid) state.apiKey = '';
+                    alert(`${p.name} API Key cleared`);
+                } else {
+                    Storage.set(p.keyStorage, trimmed);
+                    if (getCurrentProvider() === pid) state.apiKey = trimmed;
+                    alert(`${p.name} API Key Saved!`);
+                }
             }
         });
     });
@@ -305,8 +319,16 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
 
     params.forEach(p => {
         GM_registerMenuCommand(`${p.label}: ${state[p.stateKey]}`, () => {
-            const val = prompt(`Enter ${p.label} (${p.min} - ${p.max}):\n\n${p.desc}`, state[p.stateKey]);
+            const val = prompt(`Enter ${p.label} (${p.min} - ${p.max}):\n\n${p.desc}\n\n(Leave empty to reset to default: ${p.default})`, state[p.stateKey]);
             if (val !== null) {
+                // Reset to default if empty
+                if (val.trim() === '') {
+                    state[p.stateKey] = p.default;
+                    Storage.set(p.key, p.default);
+                    alert(`${p.label} reset to default: ${p.default}`);
+                    return;
+                }
+                
                 const num = p.isInt ? parseInt(val, 10) : parseFloat(val);
                 if (!isNaN(num) && num >= p.min && num <= p.max) {
                     state[p.stateKey] = num;
@@ -321,8 +343,21 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
 
     // 5. Display & Utils
     GM_registerMenuCommand("🎨 Text Color", () => {
-        const col = prompt("Translation text color (CSS):", state.textColor);
-        if (col) { Storage.set('llm_text_color', col.trim()); state.textColor = col.trim(); updateCssVariables(); }
+        const col = prompt("Translation text color (CSS):\n\n(Leave empty to reset to default)", state.textColor);
+        if (col !== null) {
+            const trimmed = col.trim();
+            if (trimmed === '') {
+                Storage.set('llm_text_color', CONFIG.DEFAULT_COLOR);
+                state.textColor = CONFIG.DEFAULT_COLOR;
+                updateCssVariables();
+                alert(`Text color reset to default: ${CONFIG.DEFAULT_COLOR}`);
+            } else {
+                Storage.set('llm_text_color', trimmed);
+                state.textColor = trimmed;
+                updateCssVariables();
+                alert(`Text color set to: ${trimmed}`);
+            }
+        }
     });
 
     GM_registerMenuCommand("🎯 Smart Skip" + (state.smartSkipEnabled ? " ✓" : ""), () => {
