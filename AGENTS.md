@@ -9,19 +9,19 @@
 
 ```
 userscript-collection/
-├── spotify-llm-lyrics-translator.user.js   969 LOC  v2.20.3
-├── nyaa-linker-userscript.user.js           576 LOC  v2.5.4
-├── grok-rate-limit-display.user.js          477 LOC  v1.1.7
-├── share-archive.user.js                   447 LOC  v1.3.4
-├── romheaven-steam-assistant.user.js        283 LOC  v1.3.4
-├── enable-copy-and-right-click.user.js      182 LOC  v1.9.5
-├── steam-links-dropdowns.user.js            164 LOC  v1.2.7
-├── fix-missing-spotify-lyrics.user.js       142 LOC  v1.1.5
+├── spotify-llm.user.js                       990 LOC  v2.21.0
+├── nyaa-linker-userscript.user.js            663 LOC  v2.5.4
+├── grok-rate-limit-display.user.js           477 LOC  v1.1.7
+├── share-archive.user.js                     460 LOC  v1.3.4
+├── romheaven-steam-assistant.user.js         283 LOC  v1.3.4
+├── enable-copy-and-right-click.user.js       204 LOC  v1.9.5
+├── steam-links-dropdowns.user.js             164 LOC  v1.2.7
+├── fix-missing-spotify-lyrics.user.js        142 LOC  v1.1.5
 ├── disable-youtube-playlist-autoplay.user.js 103 LOC v1.0.12
-├── disable-youtube-channel-autoplay.user.js  41 LOC  v1.0.12
+├── disable-youtube-channel-autoplay.user.js   41 LOC  v1.0.12
 ├── README.md
-├── LICENSE                                  GPL-3.0-or-later
-└── AGENTS.md                                (this file)
+├── LICENSE                                   GPL-3.0-or-later
+└── AGENTS.md                                 (this file)
 ```
 
 ---
@@ -34,7 +34,7 @@ Every script uses an IIFE `(function(){ 'use strict'; ... })()` or arrow IIFE `(
 Internal organization follows a consistent top-down order:
 
 1. `CONFIG` object — all constants, thresholds, selectors, URLs
-2. Utility functions/objects (`Utils`, `Store`, helpers)
+2. Utility functions/objects (`Utils`, `Storage`, helpers)
 3. Service/Manager classes — encapsulate domain logic
 4. UI class/rendering — DOM injection and updates
 5. Orchestration (`App` object or `init()`) — ties everything together
@@ -42,11 +42,11 @@ Internal organization follows a consistent top-down order:
 
 ### 2. Storage Wrapper
 
-Scripts needing persistence wrap `GM_getValue`/`GM_setValue` in a `Storage` or `Store` class/object:
+Scripts needing persistence wrap `GM_getValue`/`GM_setValue` in a `Storage` class/object:
 
 | Script | Implementation | Purpose |
 |---|---|---|
-| `spotify-llm-lyrics-translator` | `class Storage` (static methods) | Provider keys, model IDs, LLM params, translation cache (`Map` ↔ `Object`) |
+| `spotify-llm` | `class Storage` (static methods) | Provider keys, model IDs, LLM params, translation cache (`Map` ↔ `Object`) |
 | `nyaa-linker-userscript` | `class Storage` (static methods) | Settings object (filter, category, query, hotkey, etc.) |
 | `enable-copy-and-right-click` | `Store` object literal | Per-host whitelist arrays (`basicList`, `aggressiveList`) |
 | `share-archive` | Direct `GM_getValue`/`GM_setValue` | ClearURLs rule cache, mirror ranking |
@@ -58,21 +58,150 @@ Scripts needing persistence wrap `GM_getValue`/`GM_setValue` in a `Storage` or `
 
 Used in 8/10 scripts. Key strategies:
 
-- **Throttled callbacks** — `spotify-llm-lyrics-translator` throttles container scans via `setTimeout` with `OBSERVER_THROTTLE_MS` (500ms).
+- **Throttled callbacks** — `spotify-llm` throttles container scans via `setTimeout` with `OBSERVER_THROTTLE_MS` (500ms).
 - **Targeted observation** — `grok-rate-limit-display` observes only the query bar subtree to filter mutations from user input vs. model/button changes.
 - **Attribute filtering** — `disable-youtube-playlist-autoplay` watches `aria-pressed` and `class` changes on specific buttons.
 - **SPA navigation** — `nyaa-linker-userscript` and YouTube scripts detect URL path changes by comparing `location.href` segments on each mutation.
-- **Visibility gating** — `spotify-llm-lyrics-translator` disconnects observers when `document.hidden === true` and reconnects on `visibilitychange`.
+- **Visibility gating** — `spotify-llm` disconnects observers when `document.hidden === true` and reconnects on `visibilitychange`.
 
 #### IntersectionObserver
 
-Used in `spotify-llm-lyrics-translator` to lazily process lyric lines. `rootMargin: "300px 0px 300px 0px"` provides a 300px lookahead; once a line intersects, it is unobserved.
+Used in `spotify-llm` to lazily process lyric lines. `rootMargin: "300px 0px 300px 0px"` provides a 300px lookahead; once a line intersects, it is unobserved.
 
 #### CSS Animation Detection
 
-`grok-rate-limit-display` uses a CSS `@keyframes bolt-grok-appear` animation on `.query-bar` and listens for `animationstart` events to detect element insertion. This avoids a global MutationObserver entirely.
+`grok-rate-limit-display` and `steam-links-dropdowns` use CSS `@keyframes` animations on target elements and listen for `animationstart` events to detect element insertion. This avoids a global MutationObserver entirely.
 
-### 4. Network Patterns
+### 4. Input Validation & Security
+
+**Added in 2025 refactors** — Security hardening for user inputs:
+
+#### InputValidator Pattern (`nyaa-linker-userscript`)
+
+```javascript
+const InputValidator = {
+  // Validate hotkey: single alphanumeric character only (prevent XSS)
+  isValidHotkey: (key) => /^[a-zA-Z0-9]$/.test(key),
+  
+  // Sanitize custom text: strip script injection patterns
+  sanitizeCustomText: (text) => text
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .trim(),
+  
+  // Validate settings object structure
+  isValidSettings: (s) => s && typeof s === 'object' &&
+    typeof s.hotkey_key_setting === 'string' &&
+    typeof s.custom_text_setting === 'string'
+};
+```
+
+**Usage:**
+- Validate hotkey inputs (prevent special character injection)
+- Sanitize custom text (strip `<script>`, `javascript:`, event handlers)
+- Validate settings structure before saving to GM storage
+
+#### Hostname Validation (`enable-copy-and-right-click`)
+
+```javascript
+addHost: (key) => {
+  // Security: Validate hostname format to prevent storage pollution
+  if (!/^[a-z0-9.-]+$/.test(HOST)) return;
+  // ...
+}
+```
+
+#### Protocol Validation (`share-archive`)
+
+```javascript
+// Sentinel Security: Block unsafe protocols
+if (!['http:', 'https:'].includes(urlObj.protocol)) {
+  return null; // Block javascript:, data:, file:
+}
+```
+
+### 5. Query Strategies Pattern
+
+**Extracted in 2025 refactors** — Strategy pattern for query generation (`nyaa-linker-userscript`):
+
+```javascript
+const QueryStrategies = {
+  // Default: Exact match with OR fallback (quoted)
+  default: (titleJap, titleEng, baseJap, baseEng, sameBase) => {
+    return sameBase 
+      ? `"${titleJap}"|"${titleEng}"` 
+      : `"${titleJap}"|"${titleEng}"|"${baseJap}"|"${baseEng}"`;
+  },
+  
+  // Fuzzy Default: Unquoted OR search with all variants
+  fuzzy_default: (titleJap, titleEng, baseJap, baseEng, sameBase) => {
+    return sameBase 
+      ? `${titleJap}|${titleEng}` 
+      : `${titleJap}|${titleEng}|${baseJap}|${baseEng}`;
+  },
+  
+  // Base: Only use normalized titles
+  base: (titleJap, titleEng, baseJap, baseEng, sameBase) => {
+    return baseJap === baseEng 
+      ? `"${titleJap}"|"${titleEng}"` 
+      : `"${baseJap}"|"${baseEng}"`;
+  },
+  
+  // Fuzzy: Japanese title only (unquoted)
+  fuzzy: (titleJap) => titleJap,
+  
+  // Exact: Default fallback with quoted titles
+  exact: (titleJap, titleEng) => `"${titleJap}"|"${titleEng}"`
+};
+
+// Usage: const strategy = QueryStrategies[queryType] || QueryStrategies.exact;
+// return strategy(titleJap, titleEng, baseJap, baseEng, sameBase);
+```
+
+**Benefits:**
+- Reduces cyclomatic complexity (eliminates large switch statements)
+- Makes query logic testable and maintainable
+- Easy to add new strategies without modifying existing code
+
+### 6. Cache Layer with TTL
+
+**Added in 2025 refactors** — TTL-based caching to prevent memory leaks (`spotify-llm`):
+
+```javascript
+const CACHE_TTL_MS = 3600000; // 1 hour TTL
+
+// Cache entry: { value: any, timestamp: number }
+const cache = new Map();
+
+function getFromCache(key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  // TTL check: Evict expired entries
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setInCache(key, value) {
+  // Evict oldest if at capacity (LRU-style: delete first entry)
+  if (cache.size >= 2000) {
+    const oldestKey = cache.keys().next().value;
+    cache.delete(oldestKey);
+  }
+  cache.set(key, { value, timestamp: Date.now() });
+}
+```
+
+**Features:**
+- Automatic TTL expiration (1 hour default)
+- Capacity-based eviction (2000 entries max)
+- Timestamp tracking for each entry
+- Reusable helper functions (`getFromCache`, `setInCache`)
+
+### 7. Network Patterns
 
 #### Gateway Failover (`GatewayManager`)
 
@@ -101,13 +230,13 @@ Used in `spotify-llm-lyrics-translator` to lazily process lyric lines. `rootMarg
 
 Cache save is throttled: `GM_setValue` is called at most once per 10 seconds (or when the queue empties) to avoid blocking the main thread.
 
-### 6. DOM Injection Safety
+### 8. DOM Injection Safety
 
 - **`textContent` over `innerHTML`** — All scripts use `textContent` for user-visible text to prevent XSS. HTML is built programmatically via `createElement`.
-- **Sibling injection** — `spotify-llm-lyrics-translator` inserts translations as siblings after `.lyrics-lyricsContent-text` (via `textEl.after(div)`) so Spotify's React hydration doesn't remove them.
+- **Sibling injection** — `spotify-llm` inserts translations as siblings after `.lyrics-lyricsContent-text` (via `textEl.after(div)`) so Spotify's React hydration doesn't remove them.
 - **Namespace SVGs** — `grok-rate-limit-display` creates SVG elements via `document.createElementNS('http://www.w3.org/2000/svg', ...)`.
 
-### 7. Metadata Header Standard
+### 9. Metadata Header Standard
 
 All scripts follow this exact header order:
 ```
@@ -322,10 +451,25 @@ Observer Layer → processLyricElement() → Cache Check → Queue
 | Concern | Approach |
 |---|---|
 | XSS prevention | `textContent` for all user/API text. `createElement` for HTML. No `innerHTML` with dynamic data. |
+| Input validation | `InputValidator` pattern (`nyaa-linker`) validates hotkeys, sanitizes custom text, validates settings structure. |
+| Protocol validation | `share-archive` blocks `javascript:`, `data:`, `file:` protocols via allowlist (`http:`, `https:` only). |
+| Hostname validation | `enable-copy-and-right-click` validates hostname format (`/^[a-z0-9.-]+$/`) before storing in GM. |
 | `@connect` scoping | Each script declares exact domains. No wildcards except `share-archive` (7 `archive.*` TLDs). |
 | API key storage | `GM_setValue` (browser extension-sandboxed storage). Keys only sent to declared `@connect` endpoints. |
 | Frame isolation | `enable-copy-and-right-click` and YouTube scripts check `window === window.top`. |
 | Dialog suppression | `enable-copy-and-right-click` wraps `alert`/`confirm` to block copy-protection messages only (regex-filtered). |
+
+## Test Coverage
+
+| Script | Test File | Coverage |
+|---|---|---|
+| `spotify-llm` | `test_spotify_llm_cache.js` | Cache layer (normalize, comparison, hash, TTL) |
+| `nyaa-linker` | `test_nyaa_linker_optimization.js` | Title normalization, query strategies |
+| `share-archive` | `share-archive.security.test.js` | Protocol validation (XSS prevention) |
+| `romheaven-steam` | `romheaven_security_test.js` | Gateway failover, decompression |
+| `grok-rate-limit` | `test_grok_rate_limit.js` | UI rendering, API parsing |
+| `enable-copy` | `test_enable_copy_perf.js` | Event blocking, mode switching |
+| `steam-links-dropdowns` | `test_steam_links_perf.js` | CSS animation detection |
 
 ## Performance Guidelines
 

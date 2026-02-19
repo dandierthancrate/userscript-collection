@@ -41,17 +41,69 @@ const SETTINGS_CONFIG = [
 
 const removeNyaaBtns = () => document.querySelectorAll('.nyaaBtn').forEach(e => e.remove());
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Security: Input Validation Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+const InputValidator = {
+  // Validate hotkey: single alphanumeric character only (prevent XSS via special chars)
+  isValidHotkey: (key) => {
+    if (!key || typeof key !== 'string') return false;
+    return /^[a-zA-Z0-9]$/.test(key);
+  },
+
+  // Validate custom text: strip potential script injection
+  sanitizeCustomText: (text) => {
+    if (!text) return '';
+    // Remove <script>, javascript:, and event handler patterns
+    return text
+      .replace(/<script[^>]*>.*?<\/script>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim();
+  },
+
+  // Validate settings object structure
+  isValidSettings: (s) => {
+    if (!s || typeof s !== 'object') return false;
+    // Check critical fields have valid types
+    if (typeof s.hotkey_key_setting !== 'string') return false;
+    if (typeof s.custom_text_setting !== 'string') return false;
+    return true;
+  }
+};
+
 class Storage {
   static get(key, def) { return GM_getValue(key, def); }
   static set(key, val) { GM_setValue(key, val); }
   static load() {
     const s = GM_getValue('settings', {});
-    return SETTINGS_CONFIG.reduce((acc, conf) => {
+    const loaded = SETTINGS_CONFIG.reduce((acc, conf) => {
       acc[conf.key] = s[conf.key] !== undefined ? s[conf.key] : conf.default;
       return acc;
     }, {});
+    
+    // Security: Validate and sanitize user inputs
+    if (!InputValidator.isValidHotkey(loaded.hotkey_key_setting)) {
+      loaded.hotkey_key_setting = '';
+    }
+    loaded.custom_text_setting = InputValidator.sanitizeCustomText(loaded.custom_text_setting);
+    
+    return loaded;
   }
   static save(newSettings) {
+    // Security: Validate before saving
+    if (!InputValidator.isValidSettings(newSettings)) {
+      console.error('[Nyaa Linker] Invalid settings object');
+      return;
+    }
+    
+    // Sanitize user inputs
+    if (!InputValidator.isValidHotkey(newSettings.hotkey_key_setting)) {
+      newSettings.hotkey_key_setting = '';
+    }
+    newSettings.custom_text_setting = InputValidator.sanitizeCustomText(newSettings.custom_text_setting);
+    
     GM_setValue('settings', newSettings);
     settings = newSettings;
     removeNyaaBtns();
@@ -114,8 +166,28 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
       const newSettings = {};
       SETTINGS_CONFIG.forEach(conf => {
         const el = document.getElementById(`nl-setting-${conf.key}`);
-        newSettings[conf.key] = conf.type === 'checkbox' ? el.checked : el.value;
+        let value = conf.type === 'checkbox' ? el.checked : el.value;
+        
+        // Security: Validate hotkey input (single alphanumeric only)
+        if (conf.key === 'hotkey_key_setting' && value && !InputValidator.isValidHotkey(value)) {
+          alert('Invalid hotkey. Use a single letter or number only.');
+          return;
+        }
+        
+        // Security: Sanitize custom text input
+        if (conf.key === 'custom_text_setting') {
+          value = InputValidator.sanitizeCustomText(value);
+        }
+        
+        newSettings[conf.key] = value;
       });
+      
+      // Validate complete settings object before saving
+      if (!InputValidator.isValidSettings(newSettings)) {
+        alert('Invalid settings. Please check your inputs.');
+        return;
+      }
+      
       Storage.save(newSettings);
       panel.remove();
     };
@@ -449,14 +521,17 @@ function createSearch(btn, query, settings) {
 }
 
 function setupHotkey(ctx) {
+    // Security: Hotkey listener validates key before execution
+    // The hotkey_key_setting is already validated in Storage.load()/save()
     if (hotkeyListener) document.removeEventListener('keydown', hotkeyListener);
     hotkeyListener = e => {
         const mod = settings.hotkey_modifier_setting;
         const match = mod ? e[mod] : !e.ctrlKey && !e.shiftKey && !e.altKey;
-        if (match && e.key.toLowerCase() === settings.hotkey_key_setting) {
+        // Security: Re-validate hotkey at runtime (defense in depth)
+        if (match && InputValidator.isValidHotkey(settings.hotkey_key_setting) && e.key.toLowerCase() === settings.hotkey_key_setting) {
             const btn = document.querySelector('.nyaaBtn');
             if(!btn) return;
-            
+
             // Temporary query override if needed, logic simplified for now
              if (settings.hotkey_query_setting !== 'inherit') {
                  // Would need to regenerate query here, but for now we follow click behavior
@@ -468,23 +543,58 @@ function setupHotkey(ctx) {
     document.addEventListener('keydown', hotkeyListener);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Query Strategies - Extracted for maintainability and testing
+// ─────────────────────────────────────────────────────────────────────────────
+
+const QueryStrategies = {
+  // Default: Exact match with OR fallback (quoted)
+  default: (titleJap, titleEng, baseJap, baseEng, sameBase) => {
+    return sameBase 
+      ? `"${titleJap}"|"${titleEng}"` 
+      : `"${titleJap}"|"${titleEng}"|"${baseJap}"|"${baseEng}"`;
+  },
+  
+  // Fuzzy Default: Unquoted OR search with all variants
+  fuzzy_default: (titleJap, titleEng, baseJap, baseEng, sameBase) => {
+    return sameBase 
+      ? `${titleJap}|${titleEng}` 
+      : `${titleJap}|${titleEng}|${baseJap}|${baseEng}`;
+  },
+  
+  // Base: Only use normalized titles (stripped of editions/subtitles)
+  base: (titleJap, titleEng, baseJap, baseEng, sameBase) => {
+    return baseJap === baseEng 
+      ? `"${titleJap}"|"${titleEng}"` 
+      : `"${baseJap}"|"${baseEng}"`;
+  },
+  
+  // Fuzzy: Japanese title only (unquoted)
+  fuzzy: (titleJap) => titleJap,
+  
+  // Exact: Default fallback with quoted titles
+  exact: (titleJap, titleEng) => `"${titleJap}"|"${titleEng}"`
+};
+
 function getQuery(titleJap, titleEng, queryType) {
   if (!titleJap && !titleEng) return ''; // Empty return safe
+  
+  // Sanitize: Remove quotes from input titles to avoid query injection
   if (titleJap) titleJap = titleJap.replace(/["]/g, '');
   if (titleEng) titleEng = titleEng.replace(/["]/g, '');
-  if (!titleEng || titleJap.toLowerCase() === titleEng.toLowerCase()) return titleJap;
+  
+  // Single title: No need for OR query
+  if (!titleEng || titleJap.toLowerCase() === titleEng.toLowerCase()) {
+    return titleJap;
+  }
 
   const baseJap = getBaseTitle(titleJap);
   const baseEng = getBaseTitle(titleEng);
   const sameBase = baseJap === titleJap && baseEng === titleEng;
 
-  switch (queryType) {
-    case 'default': return sameBase ? `"${titleJap}"|"${titleEng}"` : `"${titleJap}"|"${titleEng}"|"${baseJap}"|"${baseEng}"`;
-    case 'fuzzy_default': return sameBase ? `${titleJap}|${titleEng}` : `${titleJap}|${titleEng}|${baseJap}|${baseEng}`;
-    case 'base': return baseJap === baseEng ? `"${titleJap}"|"${titleEng}"` : `"${baseJap}"|"${baseEng}"`;
-    case 'fuzzy': return titleJap;
-    default: return `"${titleJap}"|"${titleEng}"`;
-  }
+  // Execute strategy or fallback to exact
+  const strategy = QueryStrategies[queryType] || QueryStrategies.exact;
+  return strategy(titleJap, titleEng, baseJap, baseEng, sameBase);
 }
 
 function getBaseTitle(baseTitle) {

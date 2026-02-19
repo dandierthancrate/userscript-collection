@@ -46,3 +46,6 @@ build/
 
 # Jules CLI
 .jules-cli/
+
+# Misc
+idea/

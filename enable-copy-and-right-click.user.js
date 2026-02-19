@@ -34,25 +34,28 @@
     `;
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // Storage
+    // Storage - Standardized naming convention (see AGENTS.md §2)
     // ─────────────────────────────────────────────────────────────────────────────
 
-    const Store = {
+    const Storage = {
         get: (key, def = []) => GM_getValue(key, def),
         set: (key, val) => GM_setValue(key, val),
         hasHost: (key) => GM_getValue(key, []).includes(HOST),
         addHost: (key) => {
-            const list = Store.get(key).filter(h => h !== HOST);
+            // Security: Validate hostname format to prevent storage pollution
+            // Only allow valid domain names (letters, numbers, dots, hyphens)
+            if (!/^[a-z0-9.-]+$/.test(HOST)) return;
+            const list = Storage.get(key).filter(h => h !== HOST);
             list.push(HOST);
-            Store.set(key, list);
+            Storage.set(key, list);
         },
         removeHost: (key) => {
-            const list = Store.get(key).filter(h => h !== HOST);
-            Store.set(key, list);
+            const list = Storage.get(key).filter(h => h !== HOST);
+            Storage.set(key, list);
         },
         clear: () => {
-            Store.set('basicList', []);
-            Store.set('aggressiveList', []);
+            Storage.set('basicList', []);
+            Storage.set('aggressiveList', []);
         }
     };
 
@@ -63,8 +66,8 @@
     };
 
     const getCurrentMode = () => {
-        if (Store.hasHost('aggressiveList')) return MODES.AGGRESSIVE;
-        if (Store.hasHost('basicList')) return MODES.BASIC;
+        if (Storage.hasHost('aggressiveList')) return MODES.AGGRESSIVE;
+        if (Storage.hasHost('basicList')) return MODES.BASIC;
         return MODES.OFF;
     };
 
@@ -79,9 +82,12 @@
         },
 
         suppressDialogs: () => {
+            // Security: Only suppress copy-protection dialogs, not all alerts
+            // This prevents sites from blocking right-click via annoying alerts
+            // Pattern matches: "copy", "right click", "select", "protect", "disable"
             const pattern = /copy|right.?click|select|protect|disable/i;
             const wrap = (orig) => function (msg) {
-                if (pattern.test(String(msg))) return true;
+                if (pattern.test(String(msg))) return true; // Swallow copy-protection messages
                 return orig.apply(this, arguments);
             };
             window.alert = wrap(window.alert);
@@ -107,13 +113,16 @@
         },
 
         clearInline: (root = document) => {
+            // Security: Remove inline event handlers that could block copy/right-click
+            // Handles: oncontextmenu, onselectstart, ondragstart, oncopy, oncut, onpaste
             const elements = root.querySelectorAll ? [...root.querySelectorAll('*')] : [];
             const targets = [root, ...elements];
             const handlers = BASIC_EVENTS.map(e => 'on' + e);
             targets.forEach(el => {
                 if (!el) return;
                 handlers.forEach(h => el[h] = null);
-                if (el.dataset?.draggable) el.draggable = false; // Soft check
+                // Disable draggable to prevent drag-start interference
+                if (el.dataset?.draggable) el.draggable = false;
             });
         }
     };
@@ -165,25 +174,25 @@
         registerMenu: () => {
             if (typeof GM_registerMenuCommand !== 'function') return;
             const mode = getCurrentMode();
-            
+
             const add = (label, cb) => GM_registerMenuCommand(label, cb);
             const set = (m) => {
-                if (m === MODES.OFF) { Store.removeHost('basicList'); Store.removeHost('aggressiveList'); }
-                if (m === MODES.BASIC) { Store.addHost('basicList'); Store.removeHost('aggressiveList'); }
-                if (m === MODES.AGGRESSIVE) { Store.addHost('basicList'); Store.addHost('aggressiveList'); }
+                if (m === MODES.OFF) { Storage.removeHost('basicList'); Storage.removeHost('aggressiveList'); }
+                if (m === MODES.BASIC) { Storage.addHost('basicList'); Storage.removeHost('aggressiveList'); }
+                if (m === MODES.AGGRESSIVE) { Storage.addHost('basicList'); Storage.addHost('aggressiveList'); }
                 alert(`${m.toUpperCase()} Mode set for ${HOST}\nRefresh to apply.`);
             };
 
             add((mode === MODES.OFF ? '✅ ' : '') + '🚫 OFF', () => set(MODES.OFF));
             add((mode === MODES.BASIC ? '✅ ' : '') + '🛡️ Basic', () => set(MODES.BASIC));
             add((mode === MODES.AGGRESSIVE ? '✅ ' : '') + '⚡ Aggressive', () => set(MODES.AGGRESSIVE));
-            
+
             add('⚙️ View/Clear Lists', () => {
-                const basic = Store.get('basicList');
-                const aggressive = Store.get('aggressiveList');
+                const basic = Storage.get('basicList');
+                const aggressive = Storage.get('aggressiveList');
                 const msg = `Basic:\n${basic.join('\n') || '[none]'}\n\nAggressive:\n${aggressive.join('\n') || '[none]'}\n\nClear all?`;
                 if (confirm(msg)) {
-                    Store.clear();
+                    Storage.clear();
                     alert('Cleared. Refresh to apply.');
                 }
             });

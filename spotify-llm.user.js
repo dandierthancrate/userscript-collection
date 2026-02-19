@@ -395,42 +395,60 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
         statusEl.classList.toggle('cached', isCached);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Cache Layer with TTL - Prevents memory leaks and stale data
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const CACHE_TTL_MS = 3600000; // 1 hour TTL for normalization/comparison/hash caches
+
+    // Cache entry: { value: any, timestamp: number }
     const normalizationCache = new Map();
     const comparisonCache = new Map();
     const hashCache = new Map();
 
+    function getFromCache(cache, key) {
+        const entry = cache.get(key);
+        if (!entry) return null;
+        // TTL check: Evict expired entries
+        if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+            cache.delete(key);
+            return null;
+        }
+        return entry.value;
+    }
+
+    function setInCache(cache, key, value) {
+        // Evict oldest if at capacity (LRU-style: delete first entry)
+        if (cache.size >= 2000) {
+            const oldestKey = cache.keys().next().value;
+            cache.delete(oldestKey);
+        }
+        cache.set(key, { value, timestamp: Date.now() });
+    }
+
     function normalizeCacheKey(str) {
         if (!str) return "";
-        let cached = normalizationCache.get(str);
+        const cached = getFromCache(normalizationCache, str);
         if (cached) return cached;
-        // Limit cache size to prevent memory leaks
-        if (normalizationCache.size > 2000) {
-            const oldestKey = normalizationCache.keys().next().value;
-            normalizationCache.delete(oldestKey);
-        }
+        
         const normalized = str.replace(/\s+/g, '').toLowerCase();
-        normalizationCache.set(str, normalized);
+        setInCache(normalizationCache, str, normalized);
         return normalized;
     }
 
     function cleanTextForComparison(str) {
         if (!str) return "";
-        // Bolt: Cached for performance (expensive regex)
-        let cached = comparisonCache.get(str);
+        const cached = getFromCache(comparisonCache, str);
         if (cached) return cached;
-        if (comparisonCache.size > 2000) comparisonCache.clear();
 
         const result = str.toLowerCase().replace(COMPARISON_REGEX, '');
-        comparisonCache.set(str, result);
+        setInCache(comparisonCache, str, result);
         return result;
     }
 
     function getStrHash(str) {
-        // Bolt: Cached for performance (hot path validation)
-        if (!str) return '0';
-        let cached = hashCache.get(str);
+        const cached = getFromCache(hashCache, str);
         if (cached) return cached;
-        if (hashCache.size > 2000) hashCache.clear();
 
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
@@ -438,7 +456,7 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
             hash |= 0;
         }
         const result = hash.toString();
-        hashCache.set(str, result);
+        setInCache(hashCache, str, result);
         return result;
     }
 
