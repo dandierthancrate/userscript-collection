@@ -366,6 +366,7 @@
             const urlObj = new URL(cleanedUrl);
 
             // Sentinel Security: Block unsafe protocols (e.g., javascript:, data:, file:)
+            // javascript: URLs can execute arbitrary code in the userscript's security context
             if (!['http:', 'https:'].includes(urlObj.protocol)) {
                 return null;
             }
