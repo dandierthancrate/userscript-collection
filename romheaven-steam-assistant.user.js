@@ -87,13 +87,31 @@
   };
 
   class GatewayManager {
+    static activeGateway = null;
+
     static async fetch(pathFn, opts = {}) {
-      let lastErr;
-      for (const gw of CONFIG.GATEWAYS) {
-        try { return await Utils.gmFetch(pathFn(gw), opts); } 
-        catch (e) { lastErr = e; }
+      // 1. Try sticky gateway first for speed
+      if (this.activeGateway) {
+        try {
+          return await Utils.gmFetch(pathFn(this.activeGateway), opts);
+        } catch (e) {
+          console.warn(`[Romheaven] Gateway ${this.activeGateway} failed, falling back to race.`);
+          this.activeGateway = null; // Reset and race
+        }
       }
-      throw lastErr || new Error('GATEWAY_EXHAUSTED');
+
+      // 2. Race all gateways to find the fastest
+      const promises = CONFIG.GATEWAYS.map(gw =>
+        Utils.gmFetch(pathFn(gw), opts).then(res => ({ gw, res }))
+      );
+
+      try {
+        const { gw, res } = await Promise.any(promises);
+        this.activeGateway = gw; // Remember winner
+        return res;
+      } catch (aggregateError) {
+        throw new Error('GATEWAY_EXHAUSTED');
+      }
     }
   }
 
