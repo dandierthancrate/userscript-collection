@@ -870,7 +870,10 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
         const trackInfo = getCurrentTrackInfo();
         let userContent = 'TARGET_LANGUAGE: English\n\n';
         if (trackInfo && (trackInfo.title || trackInfo.artists)) {
-            userContent += `SONG CONTEXT: "${trackInfo.title}" by ${trackInfo.artists}\n\n`;
+            // Security: Sanitize context to prevent prompt injection (e.g. escaping quotes/newlines)
+            const title = JSON.stringify(trackInfo.title || '');
+            const artists = JSON.stringify(trackInfo.artists || '');
+            userContent += `SONG CONTEXT: ${title} by ${artists}\n\n`;
         }
         userContent += `<LYRICS_TO_TRANSLATE>\n${JSON.stringify(payloadObj)}\n</LYRICS_TO_TRANSLATE>`;
 

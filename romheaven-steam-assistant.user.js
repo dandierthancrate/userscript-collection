@@ -45,12 +45,15 @@
     #rh-size{color:#a4b0be;margin-bottom:12px}
     #rh-downloads{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .rh-btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;text-decoration:none;border-radius:6px;font-size:14px;font-weight:bold;min-width:120px;transition:all .2s ease;cursor:pointer;border:none}
+    .rh-btn:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 4px rgba(102,192,244,0.5)}
     .rh-btn-primary{background:linear-gradient(135deg,#66c0f4,#4a9fd6);color:#1b2838;box-shadow:0 1px 3px rgba(102,192,244,.3)}
     .rh-btn-primary:hover{box-shadow:0 2px 6px rgba(102,192,244,.5);transform:translateY(-1px)}
     .rh-btn-secondary{background:linear-gradient(135deg,#2d2d2d,#1a1a1a);color:#c7d5e0;border:1px solid #66c0f4;box-shadow:0 1px 3px rgba(0,0,0,.4)}
     .rh-btn-secondary:hover{box-shadow:0 2px 6px rgba(102,192,244,.2);border-color:#88d4ff;transform:translateY(-1px)}
     .rh-btn-retry{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;box-shadow:0 1px 3px rgba(231,76,60,.3)}
     .rh-btn-retry:hover{box-shadow:0 2px 6px rgba(231,76,60,.5);transform:translateY(-1px)}
+    .rh-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:#66c0f4;animation:rh-spin 1s ease-in-out infinite;margin-right:8px;display:inline-block;vertical-align:middle}
+    @keyframes rh-spin{to{transform:rotate(360deg)}}
   `;
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -87,13 +90,31 @@
   };
 
   class GatewayManager {
+    static activeGateway = null;
+
     static async fetch(pathFn, opts = {}) {
-      let lastErr;
-      for (const gw of CONFIG.GATEWAYS) {
-        try { return await Utils.gmFetch(pathFn(gw), opts); } 
-        catch (e) { lastErr = e; }
+      // 1. Try sticky gateway first for speed
+      if (this.activeGateway) {
+        try {
+          return await Utils.gmFetch(pathFn(this.activeGateway), opts);
+        } catch (e) {
+          console.warn(`[Romheaven] Gateway ${this.activeGateway} failed, falling back to race.`);
+          this.activeGateway = null; // Reset and race
+        }
       }
-      throw lastErr || new Error('GATEWAY_EXHAUSTED');
+
+      // 2. Race all gateways to find the fastest
+      const promises = CONFIG.GATEWAYS.map(gw =>
+        Utils.gmFetch(pathFn(gw), opts).then(res => ({ gw, res }))
+      );
+
+      try {
+        const { gw, res } = await Promise.any(promises);
+        this.activeGateway = gw; // Remember winner
+        return res;
+      } catch (aggregateError) {
+        throw new Error('GATEWAY_EXHAUSTED');
+      }
     }
   }
 
@@ -159,6 +180,8 @@
 
       const status = document.createElement('p');
       status.id = 'rh-status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
       status.textContent = 'Checking build versions...';
       box.appendChild(status);
 
@@ -177,6 +200,15 @@
         size: size,
         dl: downloads
       };
+    }
+
+    setLoading(text) {
+      const container = document.createElement('span');
+      const spinner = document.createElement('span');
+      spinner.className = 'rh-spinner';
+      container.appendChild(spinner);
+      container.appendChild(document.createTextNode(text));
+      this.setStatus(container, '#d1d8e0');
     }
 
     setStatus(content, color = '#d1d8e0') {
@@ -280,7 +312,7 @@
 
       const load = async () => {
         ui.els.dl.textContent = '';
-        ui.setStatus('Checking build versions...', '#d1d8e0');
+        ui.setLoading('Checking build versions...');
         
         try {
           const [buildId, txId] = await Promise.all([

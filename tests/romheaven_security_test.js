@@ -77,6 +77,11 @@ const document = {
         if (selector === '.game_area_purchase_game_wrapper') return targetElement;
         return null;
     },
+    createTextNode: (text) => {
+        const el = new MockElement('TEXT');
+        el._textContent = text;
+        return el;
+    },
     body: new MockElement('BODY'),
     head: new MockElement('HEAD'),
     documentElement: new MockElement('HTML'),
