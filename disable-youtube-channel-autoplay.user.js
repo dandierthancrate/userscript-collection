@@ -31,10 +31,11 @@
     pausedForPath = location.pathname;
   };
 
-  new MutationObserver(blockAutoplay).observe(document.documentElement, { childList: true, subtree: true });
+  // Optimization: Use polling instead of global MutationObserver to reduce overhead on every DOM change
+  setInterval(blockAutoplay, 500);
 
   document.addEventListener('yt-navigate-finish', () => {
     pausedForPath = null;
-    [100, 500].forEach(ms => setTimeout(blockAutoplay, ms));
+    blockAutoplay();
   });
 })();

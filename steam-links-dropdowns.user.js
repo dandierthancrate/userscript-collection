@@ -73,7 +73,7 @@
   const title = sanitize(getTitle());
   if (!title) return;
 
-  let activePanel = null;
+  let activeDropdown = null;
 
   const createDropdown = (label, items, insertPoint, insertMode) => {
     const wrap = document.createElement('div');
@@ -82,7 +82,17 @@
     const btn = document.createElement('a');
     btn.href = '#';
     btn.className = 'btnv6_blue_hoverfade btn_medium sld-btn';
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('aria-haspopup', 'true');
+    btn.setAttribute('aria-expanded', 'false');
     btn.innerHTML = `<span>${label}</span>`;
+
+    btn.onkeydown = e => {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        btn.click();
+      }
+    };
 
     const panel = document.createElement('div');
     panel.className = 'sld-panel';
@@ -108,13 +118,17 @@
       e.preventDefault();
       e.stopPropagation();
 
-      if (activePanel === panel) {
+      if (activeDropdown && activeDropdown.panel === panel) {
         panel.classList.remove('show');
-        activePanel = null;
+        btn.setAttribute('aria-expanded', 'false');
+        activeDropdown = null;
         return;
       }
 
-      activePanel?.classList.remove('show');
+      if (activeDropdown) {
+        activeDropdown.panel.classList.remove('show');
+        activeDropdown.btn.setAttribute('aria-expanded', 'false');
+      }
 
       const r = btn.getBoundingClientRect();
       const below = window.innerHeight - r.bottom;
@@ -123,7 +137,8 @@
         top: below > 200 ? `${r.bottom + scrollY + 2}px` : `${r.top + scrollY - panel.offsetHeight - 2}px`
       });
       panel.classList.add('show');
-      activePanel = panel;
+      btn.setAttribute('aria-expanded', 'true');
+      activeDropdown = { panel, btn };
     };
 
     insertMode === 'before'
@@ -132,8 +147,11 @@
   };
 
   document.addEventListener('click', () => {
-    activePanel?.classList.remove('show');
-    activePanel = null;
+    if (activeDropdown) {
+      activeDropdown.panel.classList.remove('show');
+      activeDropdown.btn.setAttribute('aria-expanded', 'false');
+      activeDropdown = null;
+    }
   });
 
   // Wait for hub element with MutationObserver
