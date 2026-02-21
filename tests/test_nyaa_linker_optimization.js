@@ -69,7 +69,8 @@ describe('Nyaa Linker URL Change Detection (Polling)', () => {
 
         // Mock setInterval
         global.setInterval = (cb, delay) => {
-            intervalCallback = cb;
+            // Only capture the first interval (URL poller) to avoid overwriting with awaitLoadOf's interval
+            if (!intervalCallback) intervalCallback = cb;
             intervalId = 123;
             return intervalId;
         };
