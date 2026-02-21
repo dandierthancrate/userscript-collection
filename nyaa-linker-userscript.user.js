@@ -33,7 +33,7 @@ const SETTINGS_CONFIG = [
   { key: 'hide_button_setting', label: 'Hide Button', type: 'checkbox', default: false },
   { key: 'focus_setting', label: 'Maintain Focus', type: 'checkbox', default: false },
   { key: 'custom_text_toggle_setting', label: 'Include Text', type: 'checkbox', default: false },
-  { key: 'custom_text_setting', label: 'Custom Text', type: 'text', placeholder: '?', default: '' },
+  { key: 'custom_text_setting', label: 'Custom Text', type: 'text', placeholder: '?', maxLength: 100, default: '' },
   { key: 'hotkey_key_setting', label: 'Hotkey', type: 'text', placeholder: '?', maxLength: 1, default: '' },
   { key: 'hotkey_modifier_setting', label: 'Hotkey Modifier', type: 'select', options: {'': 'None', 'shiftKey': 'Shift', 'ctrlKey': 'Control', 'altKey': 'Alt'}, default: '' },
   { key: 'hotkey_query_setting', label: 'Hotkey Query', type: 'select', options: {'inherit': 'Inherit', 'default': 'Default', 'fuzzy_default': 'Fuzzy Default', 'fuzzy': 'Fuzzy', 'exact': 'Exact', 'base': 'Base'}, default: 'inherit' }
@@ -52,15 +52,12 @@ const InputValidator = {
     return /^[a-zA-Z0-9]$/.test(key);
   },
 
-  // Validate custom text: strip potential script injection
+  // Validate custom text: Enforce length limits and basic trimming
   sanitizeCustomText: (text) => {
     if (!text) return '';
-    // Remove <script>, javascript:, and event handler patterns
-    return text
-      .replace(/<script[^>]*>.*?<\/script>/gi, '')
-      .replace(/javascript:/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-      .trim();
+    // Security: Input is safely encoded by URLSearchParams at usage site.
+    // Removed misleading blacklist regexes. Enforce length limit for DoS prevention.
+    return text.trim().slice(0, 100);
   },
 
   // Validate settings object structure
