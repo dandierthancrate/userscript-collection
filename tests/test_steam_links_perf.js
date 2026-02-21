@@ -17,7 +17,10 @@ class MockElement {
             insertBefore: () => {},
             appendChild: () => {}
         };
+        this.attributes = {};
     }
+    setAttribute(k, v) { this.attributes[k] = v; }
+    getAttribute(k) { return this.attributes[k]; }
     querySelector() { return null; }
     appendChild() {}
     getBoundingClientRect() { return { left: 0, top: 0, bottom: 0, right: 0 }; }
