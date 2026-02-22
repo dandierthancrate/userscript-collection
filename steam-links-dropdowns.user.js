@@ -85,7 +85,9 @@
     btn.setAttribute('role', 'button');
     btn.setAttribute('aria-haspopup', 'true');
     btn.setAttribute('aria-expanded', 'false');
-    btn.innerHTML = `<span>${label}</span>`;
+    const span = document.createElement('span');
+    span.textContent = label;
+    btn.appendChild(span);
 
     btn.onkeydown = e => {
       if (e.key === ' ' || e.key === 'Spacebar') {
