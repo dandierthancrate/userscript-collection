@@ -14,7 +14,7 @@
 // ==/UserScript==
 
 (function () {
-  'use strict';
+  "use strict";
 
   const STYLES = `
     .sld-wrap{display:inline-block;position:relative;margin-right:4px;vertical-align:top}
@@ -30,45 +30,59 @@
 
   const DROPDOWNS = [
     {
-      label: 'Find...',
+      label: "Find...",
       items: [
-        { header: 'DDL' },
-        { name: 'IGG-Games', url: 'https://igg-games.com/?s={q}' },
-        { name: 'SteamRIP', url: 'https://steamrip.com/?s={q}' },
-        { name: 'AnkerGames', url: 'https://ankergames.net/game/{q}' },
-        { header: 'Torrent' },
-        { name: 'Rutracker', url: 'https://rutracker.org/forum/tracker.php?nm={q}' },
-        { name: 'Nyaa.si', url: 'https://nyaa.si/?f=0&c=6_2&q={q}' },
-        { header: 'Repack' },
-        { name: 'ElAmigos', url: 'https://elamigos.site/' },
-        { name: 'FitGirl Repacks', url: 'https://fitgirl-repacks.site/?s={q}' },
-        { header: 'NSFW' },
-        { name: 'F95Zone', url: 'https://f95zone.to/search/?q={q}&c[title_only]=1&o=relevance' },
-        { name: 'Kimochi', url: 'https://kimochi.info/?s={q}' },
-        { name: 'FapForFun', url: 'https://fapforfun.net/?s={q}' },
-        { name: 'Eroge Download', url: 'https://erogedownload.com/?s={q}' },
-      ]
+        { header: "DDL" },
+        { name: "IGG-Games", url: "https://igg-games.com/?s={q}" },
+        { name: "SteamRIP", url: "https://steamrip.com/?s={q}" },
+        { name: "AnkerGames", url: "https://ankergames.net/game/{q}" },
+        { header: "Torrent" },
+        {
+          name: "Rutracker",
+          url: "https://rutracker.org/forum/tracker.php?nm={q}",
+        },
+        { name: "Nyaa.si", url: "https://nyaa.si/?f=0&c=6_2&q={q}" },
+        { header: "Repack" },
+        { name: "ElAmigos", url: "https://elamigos.site/" },
+        { name: "FitGirl Repacks", url: "https://fitgirl-repacks.site/?s={q}" },
+        { header: "NSFW" },
+        {
+          name: "F95Zone",
+          url: "https://f95zone.to/search/?q={q}&c[title_only]=1&o=relevance",
+        },
+        { name: "Kimochi", url: "https://kimochi.info/?s={q}" },
+        { name: "FapForFun", url: "https://fapforfun.net/?s={q}" },
+        { name: "Eroge Download", url: "https://erogedownload.com/?s={q}" },
+      ],
     },
     {
-      label: 'Misc',
+      label: "Misc",
       items: [
-        { name: 'WeMod', url: 'https://www.wemod.com/cheats?q={q}' },
-        { name: 'FLiNG Trainer', url: 'https://flingtrainer.com/search/{q}/' },
-      ]
-    }
+        { name: "WeMod", url: "https://www.wemod.com/cheats?q={q}" },
+        { name: "FLiNG Trainer", url: "https://flingtrainer.com/search/{q}/" },
+      ],
+    },
   ];
 
   const getTitle = () => {
-    const el = document.getElementById('appHubAppName');
-    return el?.textContent?.trim() || document.title.match(/^(.*?)\s+on Steam$/)?.[1]?.trim() || '';
+    const el = document.getElementById("appHubAppName");
+    return (
+      el?.textContent?.trim() ||
+      document.title.match(/^(.*?)\s+on Steam$/)?.[1]?.trim() ||
+      ""
+    );
   };
 
-  const sanitize = t => t
-    ?.replace(/[™®©]/g, '')
-    .replace(/\s*[:\-–—]?\s+(Remastered|Remake|Definitive|Ultimate|Deluxe|GOTY|Game of the Year|Anniversary|Enhanced|Complete|Gold|Premium|Collectors|Extended|Legacy)(\s+(Collection|Edition|Cut))?$/i, '')
-    .replace(/\s*\(?(VR)\)?$/i, '')
-    .replace(/\s+\d{4}$/, '')
-    .trim() || '';
+  const sanitize = (t) =>
+    t
+      ?.replace(/[™®©]/g, "")
+      .replace(
+        /\s*[:\-–—]?\s+(Remastered|Remake|Definitive|Ultimate|Deluxe|GOTY|Game of the Year|Anniversary|Enhanced|Complete|Gold|Premium|Collectors|Extended|Legacy)(\s+(Collection|Edition|Cut))?$/i,
+        "",
+      )
+      .replace(/\s*\(?(VR)\)?$/i, "")
+      .replace(/\s+\d{4}$/, "")
+      .trim() || "";
 
   const title = sanitize(getTitle());
   if (!title) return;
@@ -76,37 +90,84 @@
   let activeDropdown = null;
 
   const createDropdown = (label, items, insertPoint, insertMode) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'sld-wrap';
+    const wrap = document.createElement("div");
+    wrap.className = "sld-wrap";
 
-    const btn = document.createElement('a');
-    btn.href = '#';
-    btn.className = 'btnv6_blue_hoverfade btn_medium sld-btn';
-    btn.setAttribute('role', 'button');
-    btn.setAttribute('aria-haspopup', 'true');
-    btn.setAttribute('aria-expanded', 'false');
+    const uniqueId = `sld-panel-${label.replace(/\W/g, "-").toLowerCase()}-${Math.random().toString(36).substr(2, 5)}`;
+
+    const btn = document.createElement("a");
+    btn.href = "#";
+    btn.className = "btnv6_blue_hoverfade btn_medium sld-btn";
+    btn.setAttribute("role", "button");
+    btn.setAttribute("aria-haspopup", "true");
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", uniqueId);
     btn.innerHTML = `<span>${label}</span>`;
 
-    btn.onkeydown = e => {
-      if (e.key === ' ' || e.key === 'Spacebar') {
+    const panel = document.createElement("div");
+    panel.id = uniqueId;
+    panel.className = "sld-panel";
+    panel.setAttribute("role", "menu");
+
+    const focusFirst = () => {
+      const first = panel.querySelector('a[role="menuitem"]');
+      if (first) first.focus();
+    };
+
+    btn.onkeydown = (e) => {
+      if (
+        e.key === " " ||
+        e.key === "Spacebar" ||
+        e.key === "Enter" ||
+        e.key === "ArrowDown"
+      ) {
         e.preventDefault();
-        btn.click();
+        if (btn.getAttribute("aria-expanded") !== "true") {
+          btn.click();
+          if (e.key === "ArrowDown") focusFirst();
+        } else if (e.key === "ArrowDown") {
+          focusFirst();
+        }
       }
     };
 
-    const panel = document.createElement('div');
-    panel.className = 'sld-panel';
+    panel.onkeydown = (e) => {
+      const current = document.activeElement;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        panel.classList.remove("show");
+        btn.setAttribute("aria-expanded", "false");
+        activeDropdown = null;
+        btn.focus();
+        return;
+      }
+
+      const links = Array.from(panel.querySelectorAll('a[role="menuitem"]'));
+      const idx = links.indexOf(current);
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = links[idx + 1] || links[0];
+        if (next) next.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = links[idx - 1] || links[links.length - 1];
+        if (prev) prev.focus();
+      }
+    };
 
     for (const item of items) {
-      const el = document.createElement(item.header ? 'div' : 'a');
+      const el = document.createElement(item.header ? "div" : "a");
       if (item.header) {
-        el.className = 'sld-header';
+        el.className = "sld-header";
         el.textContent = item.header;
       } else {
-        el.href = item.url.replace('{q}', encodeURIComponent(title));
+        el.href = item.url.replace("{q}", encodeURIComponent(title));
         el.textContent = item.name;
-        el.target = '_blank';
-        el.rel = 'noopener';
+        el.target = "_blank";
+        el.rel = "noopener";
+        el.setAttribute("role", "menuitem");
+        el.addEventListener("keydown", panel.onkeydown);
       }
       panel.appendChild(el);
     }
@@ -114,53 +175,56 @@
     document.body.appendChild(panel);
     wrap.appendChild(btn);
 
-    btn.onclick = e => {
+    btn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
 
       if (activeDropdown && activeDropdown.panel === panel) {
-        panel.classList.remove('show');
-        btn.setAttribute('aria-expanded', 'false');
+        panel.classList.remove("show");
+        btn.setAttribute("aria-expanded", "false");
         activeDropdown = null;
         return;
       }
 
       if (activeDropdown) {
-        activeDropdown.panel.classList.remove('show');
-        activeDropdown.btn.setAttribute('aria-expanded', 'false');
+        activeDropdown.panel.classList.remove("show");
+        activeDropdown.btn.setAttribute("aria-expanded", "false");
       }
 
       const r = btn.getBoundingClientRect();
       const below = window.innerHeight - r.bottom;
       Object.assign(panel.style, {
         left: `${r.left + scrollX}px`,
-        top: below > 200 ? `${r.bottom + scrollY + 2}px` : `${r.top + scrollY - panel.offsetHeight - 2}px`
+        top:
+          below > 200
+            ? `${r.bottom + scrollY + 2}px`
+            : `${r.top + scrollY - panel.offsetHeight - 2}px`,
       });
-      panel.classList.add('show');
-      btn.setAttribute('aria-expanded', 'true');
+      panel.classList.add("show");
+      btn.setAttribute("aria-expanded", "true");
       activeDropdown = { panel, btn };
     };
 
-    insertMode === 'before'
+    insertMode === "before"
       ? insertPoint.parentNode.insertBefore(wrap, insertPoint)
       : insertPoint.appendChild(wrap);
   };
 
-  document.addEventListener('click', () => {
+  document.addEventListener("click", () => {
     if (activeDropdown) {
-      activeDropdown.panel.classList.remove('show');
-      activeDropdown.btn.setAttribute('aria-expanded', 'false');
+      activeDropdown.panel.classList.remove("show");
+      activeDropdown.btn.setAttribute("aria-expanded", "false");
       activeDropdown = null;
     }
   });
 
   // Wait for hub element with MutationObserver
-  const initDropdowns = hub => {
+  const initDropdowns = (hub) => {
     if (hub.dataset.sldInit) return;
-    hub.dataset.sldInit = 'true';
+    hub.dataset.sldInit = "true";
     const community = hub.querySelector('a[href*="steamcommunity.com/app/"]');
     const target = community || hub;
-    const mode = community ? 'before' : 'append';
+    const mode = community ? "before" : "append";
     for (const { label, items } of DROPDOWNS) {
       createDropdown(label, items, target, mode);
     }
@@ -168,8 +232,8 @@
 
   // Bolt: Optimized element detection using CSS Animation instead of global MutationObserver
   // This removes the O(N) overhead on every DOM mutation.
-  document.addEventListener('animationstart', (e) => {
-    if (e.animationName === 'sld-node-inserted') {
+  document.addEventListener("animationstart", (e) => {
+    if (e.animationName === "sld-node-inserted") {
       initDropdowns(e.target);
     }
   });
