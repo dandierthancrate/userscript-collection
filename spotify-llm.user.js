@@ -415,6 +415,11 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
             line-height: 1.3; opacity: 0.9; pointer-events: none;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
+        /* Bolt: Optimized Detection */
+        @keyframes llm-lyric-found { from { opacity: 0.99; } to { opacity: 1; } }
+        ${LYRIC_SELECTOR} {
+            animation: llm-lyric-found 0.001s;
+        }
         #llm-status {
             position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8);
             color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 11px;
@@ -639,35 +644,29 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
         });
     }
 
-    function manageObserver(forceRescan = false) {
-        if (document.hidden) {
+    function handleLyricElementFound(element) {
+        if (!element || !document.body.contains(element)) return;
+        // The container is typically the parent of the lyric line
+        const container = element.parentElement;
+
+        if (state.currentContainer !== container) {
             if (state.mutationObserver) state.mutationObserver.disconnect();
             if (state.intersectionObserver) state.intersectionObserver.disconnect();
-            return;
-        }
-        const sampleLine = document.querySelector(LYRIC_SELECTOR);
-        if (!sampleLine) {
-            if (state.currentContainer) {
-                if (state.mutationObserver) state.mutationObserver.disconnect();
-                if (state.intersectionObserver) state.intersectionObserver.disconnect();
-                state.currentContainer = null;
-            }
-            return;
-        }
-        const container = sampleLine.parentElement;
-        const containerChanged = state.currentContainer !== container;
-        if (containerChanged) {
-            if (state.mutationObserver) state.mutationObserver.disconnect();
+
             state.currentContainer = container;
             state.mutationObserver.observe(container, { childList: true, subtree: true, characterData: true, attributes: true });
-        }
-        // Always rescan on visibility change or container change to reapply translations
-        if (forceRescan || containerChanged) {
             scanContainer(container);
         }
     }
 
-    document.addEventListener('visibilitychange', () => manageObserver(!document.hidden));
+    function checkVisibilityAndScan() {
+        if (document.hidden) return;
+        if (state.currentContainer && document.body.contains(state.currentContainer)) {
+            scanContainer(state.currentContainer);
+        }
+    }
+
+    document.addEventListener('visibilitychange', () => checkVisibilityAndScan());
 
     function queueElementForTranslation(element, text, cacheKey) {
         // Skip if Smart Skip already triggered for this session
@@ -1025,27 +1024,32 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
         }
     }
 
-    function scheduleObserverCheck() {
-        if (state.observerScheduleId) {
-            if (typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(state.observerScheduleId);
-            else clearTimeout(state.observerScheduleId);
-        }
-        const scheduleNext = () => {
-            manageObserver();
-            setTimeout(scheduleObserverCheck, 2000);
+    function scheduleCleanup() {
+        if (state.observerScheduleId) clearTimeout(state.observerScheduleId);
+
+        const cleanup = () => {
+            if (state.currentContainer && !document.body.contains(state.currentContainer)) {
+                if (state.mutationObserver) state.mutationObserver.disconnect();
+                if (state.intersectionObserver) state.intersectionObserver.disconnect();
+                state.currentContainer = null;
+            }
+            state.observerScheduleId = setTimeout(cleanup, 10000);
         };
-        if (typeof requestIdleCallback !== 'undefined') {
-            state.observerScheduleId = requestIdleCallback(scheduleNext, { timeout: 3000 });
-        } else {
-            state.observerScheduleId = setTimeout(scheduleNext, 100);
-        }
+        state.observerScheduleId = setTimeout(cleanup, 10000);
     }
 
 
     window.addEventListener('load', () => {
         console.log(`[LLM Translator] v${GM_info.script.version}`);
         setupObservers();
-        scheduleObserverCheck();
+
+        document.addEventListener('animationstart', (e) => {
+            if (e.animationName === 'llm-lyric-found') {
+                handleLyricElementFound(e.target);
+            }
+        });
+
+        scheduleCleanup();
     });
 
 })();
