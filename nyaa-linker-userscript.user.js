@@ -113,6 +113,9 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
     if (document.getElementById('nyaa-linker-settings')) return;
     const panel = document.createElement('div');
     panel.id = 'nyaa-linker-settings';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Nyaa Linker Settings');
     Object.assign(panel.style, {
       position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
       backgroundColor: '#1a1a1a', color: '#dedede', padding: '20px',
@@ -124,6 +127,7 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
       const label = panel.appendChild(document.createElement('label'));
       label.textContent = conf.label + ':';
       label.style.textAlign = 'right';
+      label.setAttribute('for', `nl-setting-${conf.key}`);
 
       let input;
       if (conf.type === 'select') {
@@ -155,6 +159,7 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
     btnRow.style.textAlign = 'center';
     
     const saveBtn = btnRow.appendChild(document.createElement('button'));
+    saveBtn.type = 'button';
     saveBtn.textContent = 'Save & Close';
     saveBtn.style.padding = '5px 10px';
     saveBtn.style.cursor = 'pointer';
@@ -190,6 +195,7 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
     };
 
     const closeBtn = btnRow.appendChild(document.createElement('button'));
+    closeBtn.type = 'button';
     closeBtn.textContent = 'Cancel';
     closeBtn.style.marginLeft = '10px';
     closeBtn.onclick = () => panel.remove();
