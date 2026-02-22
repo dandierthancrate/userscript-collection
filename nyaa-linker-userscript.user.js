@@ -636,7 +636,7 @@ function getBaseTitle(baseTitle) {
 }
 
 const awaitLoadOf = (() => {
-  let observer = null;
+  let interval = null;
   const listeners = new Set();
 
   function check() {
@@ -647,9 +647,9 @@ const awaitLoadOf = (() => {
         listeners.delete(listener);
       }
     }
-    if (listeners.size === 0 && observer) {
-      observer.disconnect();
-      observer = null;
+    if (listeners.size === 0 && interval) {
+      clearInterval(interval);
+      interval = null;
     }
   }
 
@@ -678,9 +678,10 @@ const awaitLoadOf = (() => {
       const listener = { match: matchSelector, resolve };
       listeners.add(listener);
 
-      if (!observer) {
-        observer = new MutationObserver(check);
-        observer.observe(document.body, { childList: true, subtree: true });
+      if (!interval) {
+        // Bolt: Optimized element detection using Polling (200ms) instead of global MutationObserver
+        // This removes O(N) overhead on every DOM mutation during page load/hydration.
+        interval = setInterval(check, 200);
       }
     });
 })();
