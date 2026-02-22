@@ -37,6 +37,17 @@
         DEFAULT_MAX_COMPLETION_TOKENS: 2048
     };
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Security: Input Validation
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const InputValidator = {
+        isValidModelId: (id) => /^[a-zA-Z0-9-.:/]+$/.test(id),
+        isValidApiKey: (key) => /^[a-zA-Z0-9-._]+$/.test(key),
+        isValidColor: (color) => /^[a-zA-Z0-9#(),.\s%]+$/.test(color) && !/[;{}]/.test(color),
+        sanitize: (str) => str ? str.trim() : ''
+    };
+
     const LYRIC_SELECTOR = '[data-testid="lyrics-line"], [data-testid="fullscreen-lyric"], .lyrics-lyricsContent-lyric, .lyrics-lyricsContainer-LyricsLine';
 
     // Language Detection Patterns - Combined for performance
@@ -279,12 +290,16 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
             const current = Storage.get(p.modelStorage) || '';
             const m = prompt(`Enter ${p.name} Model ID:\n\n(Leave empty to reset to default)`, current);
             if (m !== null) {
-                const trimmed = m.trim();
+                const trimmed = InputValidator.sanitize(m);
                 if (trimmed === '') {
                     Storage.set(p.modelStorage, null);
                     if (getCurrentProvider() === pid) state.model = '';
                     alert(`${p.name} Model reset to default (empty)`);
                 } else {
+                    if (!InputValidator.isValidModelId(trimmed)) {
+                        alert('Invalid Model ID format. Use alphanumeric, dashes, dots, colons, slashes.');
+                        return;
+                    }
                     Storage.set(p.modelStorage, trimmed);
                     if (getCurrentProvider() === pid) state.model = trimmed;
                     alert(`${p.name} Model Saved!`);
@@ -296,12 +311,16 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
             const current = Storage.get(p.keyStorage) || '';
             const key = prompt(`Enter ${p.name} API Key:\n\n(Leave empty to clear)`, current);
             if (key !== null) {
-                const trimmed = key.trim();
+                const trimmed = InputValidator.sanitize(key);
                 if (trimmed === '') {
                     Storage.set(p.keyStorage, '');
                     if (getCurrentProvider() === pid) state.apiKey = '';
                     alert(`${p.name} API Key cleared`);
                 } else {
+                    if (!InputValidator.isValidApiKey(trimmed)) {
+                        alert('Invalid API Key format.');
+                        return;
+                    }
                     Storage.set(p.keyStorage, trimmed);
                     if (getCurrentProvider() === pid) state.apiKey = trimmed;
                     alert(`${p.name} API Key Saved!`);
@@ -345,13 +364,17 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
     GM_registerMenuCommand("🎨 Text Color", () => {
         const col = prompt("Translation text color (CSS):\n\n(Leave empty to reset to default)", state.textColor);
         if (col !== null) {
-            const trimmed = col.trim();
+            const trimmed = InputValidator.sanitize(col);
             if (trimmed === '') {
                 Storage.set('llm_text_color', CONFIG.DEFAULT_COLOR);
                 state.textColor = CONFIG.DEFAULT_COLOR;
                 updateCssVariables();
                 alert(`Text color reset to default: ${CONFIG.DEFAULT_COLOR}`);
             } else {
+                if (!InputValidator.isValidColor(trimmed)) {
+                    alert('Invalid color format.');
+                    return;
+                }
                 Storage.set('llm_text_color', trimmed);
                 state.textColor = trimmed;
                 updateCssVariables();
