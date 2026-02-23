@@ -340,15 +340,16 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
         GM_registerMenuCommand(`${p.label}: ${state[p.stateKey]}`, () => {
             const val = prompt(`Enter ${p.label} (${p.min} - ${p.max}):\n\n${p.desc}\n\n(Leave empty to reset to default: ${p.default})`, state[p.stateKey]);
             if (val !== null) {
+                const trimmed = val.trim();
                 // Reset to default if empty
-                if (val.trim() === '') {
+                if (trimmed === '') {
                     state[p.stateKey] = p.default;
                     Storage.set(p.key, p.default);
                     alert(`${p.label} reset to default: ${p.default}`);
                     return;
                 }
-                
-                const num = p.isInt ? parseInt(val, 10) : parseFloat(val);
+
+                const num = p.isInt ? parseInt(trimmed, 10) : parseFloat(trimmed);
                 if (!isNaN(num) && num >= p.min && num <= p.max) {
                     state[p.stateKey] = num;
                     Storage.set(p.key, num);
