@@ -84,6 +84,14 @@
     function getPrompt(sourceLang) {
         // Static prefix for provider-side prompt caching (identical across ALL requests)
         // This portion is cached by the LLM provider, reducing latency and cost by 60-70%
+        // Cerebras/Groq caching: Place static content FIRST for maximum cache hit rate
+        //
+        // Expert Persona Framework (5 elements):
+        // 1. Specific role + seniority: Senior Lyrics Translator, 10+ years
+        // 2. Industry/domain context: Spotify, Apple Music, Musixmatch verified contributor
+        // 3. Methodologies: Line-by-line alignment, tone preservation, creative translation
+        // 4. Constraints: 1000 chars/line, JSON-only output, no merge/split
+        // 5. Output format: Raw JSON with line_id keys, SKIP markers for instrumentals
         const SHARED_PREAMBLE = `You are a Senior Lyrics Translator with 10+ years experience translating CJK lyrics for Spotify, Apple Music, and Musixmatch verified contributors.
 
 YOUR EXPERTISE:
@@ -103,7 +111,7 @@ MUSIXMATCH TRANSLATION GUIDELINES (MANDATORY):
 ✅ For untranslatables: keep as-is or transliterate (not translate)
 
 OUTPUT FORMAT (STRICT):
-- Raw JSON only: {"id": "translation"} or {"id": "SKIP"}
+- Raw JSON only: {"line_id": "translation"} or {"line_id": "SKIP"}
 - SKIP when: line is instrumental marker (♪🎵), already English, or pure whitespace
 - Max 1000 chars per translation. Preserve line IDs exactly.
 - NO markdown, NO code blocks, NO explanations
@@ -115,7 +123,8 @@ QUALITY VERIFICATION (BEFORE RESPONDING):
 □ No translationese (read aloud for natural English flow)
 □ Line IDs preserved exactly from input
 
-If ambiguous lyrics have multiple valid interpretations: provide the most likely translation based on context.`;
+If ambiguous lyrics have multiple valid interpretations: provide the most likely translation based on context.
+If you lack enough information to give a complete translation, use context from surrounding lines to infer meaning.`;
 
         // Dynamic suffix: language-specific linguistic rules (changes per request, enables partial caching)
         // Only ~200-300 tokens regenerated per request; rest served from cache
