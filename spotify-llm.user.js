@@ -100,28 +100,28 @@ YOUR EXPERTISE:
 - Chinese: Mandopop, C-rock, Cantopop (1000+ translated tracks)
 
 MUSIXMATCH TRANSLATION GUIDELINES (MANDATORY):
-✅ Line-by-line: Match exact line structure of source lyrics
-✅ Never merge: 2+ source lines → 2+ translation lines
-✅ Never split: 1 source line → 1 translation line
-✅ Preserve line breaks from transcribed/formatted lyrics
-✅ Formatting: Capitalize first letter + proper nouns only. Re-capitalize after ? !
-✅ Maintain original tone (funny→funny, melancholic→melancholic, romantic→romantic)
-✅ Creative translation > word-for-word literal
-✅ Keep brands/products/cities untranslated (Diet Pepsi → Diet Pepsi, Tokyo → Tokyo)
-✅ For untranslatables: keep as-is or transliterate (not translate)
+[CHECK] Line-by-line: Match exact line structure of source lyrics
+[CHECK] Never merge: 2+ source lines -> 2+ translation lines
+[CHECK] Never split: 1 source line -> 1 translation line
+[CHECK] Preserve line breaks from transcribed/formatted lyrics
+[CHECK] Formatting: Capitalize first letter + proper nouns only. Re-capitalize after ? !
+[CHECK] Maintain original tone (funny->funny, melancholic->melancholic, romantic->romantic)
+[CHECK] Creative translation > word-for-word literal
+[CHECK] Keep brands/products/cities untranslated (Diet Pepsi -> Diet Pepsi, Tokyo -> Tokyo)
+[CHECK] For untranslatables: keep as-is or transliterate (not translate)
 
 OUTPUT FORMAT (STRICT):
 - Raw JSON only: {"line_id": "translation"} or {"line_id": "SKIP"}
-- SKIP when: line is instrumental marker (♪🎵), already English, or pure whitespace
+- SKIP when: line is instrumental marker, already English, or pure whitespace
 - Max 1000 chars per translation. Preserve line IDs exactly.
 - NO markdown, NO code blocks, NO explanations
 
 QUALITY VERIFICATION (BEFORE RESPONDING):
-□ Each translation line matches source line count (no merge/split)
-□ Brand names, city names, product names are untranslated
-□ Tone matches original (check verb endings, particles, honorifics)
-□ No translationese (read aloud for natural English flow)
-□ Line IDs preserved exactly from input
+[BOX] Each translation line matches source line count (no merge/split)
+[BOX] Brand names, city names, product names are untranslated
+[BOX] Tone matches original (check verb endings, particles, honorifics)
+[BOX] No translationese (read aloud for natural English flow)
+[BOX] Line IDs preserved exactly from input
 
 If ambiguous lyrics have multiple valid interpretations: provide the most likely translation based on context.
 If you lack enough information to give a complete translation, use context from surrounding lines to infer meaning.`;
@@ -131,34 +131,34 @@ If you lack enough information to give a complete translation, use context from 
         const RULES = {
             ja: `
 JAPANESE LINGUISTICS (APPLY THESE RULES):
-- Particles: は(topic), が(subject), を(object), に(direction/time), で(means/location), へ(direction)
-- Verb endings: -たい(want), -てしまう(regret/completion), -ている(ongoing/state), -な prohibition
-- Honorifics: -さん/-くん/-ちゃん/-様/-先生 → reflect relationship in tone
-- Onomatopoeia: translate meaning (ドキドキ→heart racing, シーン→silence, ワイワイ→lively)
+- Particles: wa(topic), ga(subject), wo(object), ni(direction/time), de(means/location), e(direction)
+- Verb endings: -tai(want), -te shimau(regret/completion), -te iru(ongoing/state), -na prohibition
+- Honorifics: -san/-kun/-chan/-sama/-sensei -> reflect relationship in tone
+- Onomatopoeia: translate meaning (doki doki->heart racing, shiin->silence, wai wai->lively)
 - Omitted subjects: infer I/you/we/they from context and verb conjugation
-- Final particles: よ(emphasis), ね(agreement), か(question), な(reflection), わ(feminine)
-- Compound words: translate holistic meaning (問答=dialogue, 愛憎=love-hate, 喜怒哀楽=emotions)
-- Archaic forms: だ→である, ～ぬ(negative), ～けむ(conjecture) → modern equivalent meaning`,
+- Final particles: yo(emphasis), ne(agreement), ka(question), na(reflection), wa(feminine)
+- Compound words: translate holistic meaning (mondou=dialogue, aizou=love-hate, kidoairaku=emotions)
+- Archaic forms: da->de aru, ~nu(negative), ~kemu(conjecture) -> modern equivalent meaning`,
             ko: `
 KOREAN LINGUISTICS (APPLY THESE RULES):
-- Speech levels: 해요체/합니다(polite), 반말(casual/intimate) → reflect in English tone
-- Particles: 은/는(topic), 이/가(subject), 을/를(object), 에/에서(location/time), 로/으로(direction)
-- Verb endings: -고 싶다(want), -아/어 버리다(completion/regret), -고 있다(ongoing), -게 하다(causative)
-- Address terms: -님(honorific), -씨(neutral), 오빠/언니/누나/형(sibling terms) → convey relationship
-- Konglish: translate meaning (스킬→skill/ability, 파이팅→fighting spirit/cheer up, 화이팅→you got this)
-- Final particles: 요(polite), 네(acknowledgment), 지(confirmation/shared knowledge), 군요(realization)
-- Contractions/spoken: 뭐=무엇, 걔=그 아이, 저기=저것, 안=않아, 못=못해. Parse colloquial forms
-- Sino-Korean: 한자 compounds → translate meaning (사랑=love, 희망=hope, 운명=fate/destiny)`,
+- Speech levels: haeyoche/hapnida(polite), banmal(casual/intimate) -> reflect in English tone
+- Particles: eun/neun(topic), i/ga(subject), eul/reul(object), e/eseo(location/time), ro/euro(direction)
+- Verb endings: -go sipda(want), -a/eo beorida(completion/regret), -go itda(ongoing), -ge hada(causative)
+- Address terms: -nim(honorific), -ssi(neutral), oppa/eonni/nuna/hyeong(sibling terms) -> convey relationship
+- Konglish: translate meaning (seukil->skill/ability, paiting->fighting spirit/cheer up, hwaiting->you got this)
+- Final particles: yo(polite), ne(acknowledgment), ji(confirmation/shared knowledge), gunyo(realization)
+- Contractions/spoken: mwo=mueot, gyae=geu ai, jeogi=jeogeot, an=anha, mot=mothae. Parse colloquial forms
+- Sino-Korean: hanja compounds -> translate meaning (sarang=love, huimang=hope, unmyeong=fate/destiny)`,
             zh: `
 CHINESE LINGUISTICS (APPLY THESE RULES):
-- Measure words: generally omit unless semantically meaningful (一片=一片 vs. 一个=omit)
-- Aspect markers: 了(completed/change), 着(ongoing/state), 过(experienced), 在(progressive)
-- Classical Chinese (文言文): translate by meaning, not character-by-character
-- Chengyu idioms: translate holistic meaning (一见钟情=love at first sight, 海枯石烂=eternal love)
-- Particles: 的(possessive/adjective), 了(state change), 吗(yes/no question), 呢(continuation), 啊(emphasis)
-- Reduplication: 慢慢=slowly/gently, 高高=high up, 悄悄=quietly/secretly → convey emotional nuance
+- Measure words: generally omit unless semantically meaningful
+- Aspect markers: le(completed/change), zhe(ongoing/state), guo(experienced), zai(progressive)
+- Classical Chinese (wenyanwen): translate by meaning, not character-by-character
+- Chengyu idioms: translate holistic meaning (yijianzhongqing=love at first sight, haikushilan=eternal love)
+- Particles: de(possessive/adjective), le(state change), ma(yes/no question), ne(continuation), a(emphasis)
+- Reduplication: manman=slowly/gently, gaogao=high up, qiaoqiao=quietly/secretly -> convey emotional nuance
 - Context inference: tense, plurality, gender from surrounding lines and time words
-- Dialect/literary: 啥=什么，甭=不用，汝=你(classical) → modern Mandarin equivalent → English`
+- Dialect/literary: sha=shenme, beng=buyong, ru=ni(classical) -> modern Mandarin equivalent -> English`
         };
         return SHARED_PREAMBLE + (RULES[sourceLang] || "");
     }
