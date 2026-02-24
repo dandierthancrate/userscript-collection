@@ -89,15 +89,33 @@
     span.textContent = label;
     btn.appendChild(span);
 
+    const panel = document.createElement('div');
+    panel.id = `sld-panel-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    panel.className = 'sld-panel';
+    panel.setAttribute('role', 'menu');
+    btn.setAttribute('aria-controls', panel.id);
+
     btn.onkeydown = e => {
-      if (e.key === ' ' || e.key === 'Spacebar') {
+      if ([' ', 'Enter', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
-        btn.click();
+        if (!activeDropdown || activeDropdown.btn !== btn) btn.click();
+        const first = panel.querySelector('[role="menuitem"]');
+        if (first) setTimeout(() => first.focus(), 0);
       }
     };
 
-    const panel = document.createElement('div');
-    panel.className = 'sld-panel';
+    const handleMenuKey = (e, el) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        btn.click();
+        btn.focus();
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const all = [...panel.querySelectorAll('[role="menuitem"]')];
+        const next = all[all.indexOf(el) + (e.key === 'ArrowDown' ? 1 : -1)];
+        if (next) next.focus();
+      }
+    };
 
     for (const item of items) {
       const el = document.createElement(item.header ? 'div' : 'a');
@@ -109,6 +127,8 @@
         el.textContent = item.name;
         el.target = '_blank';
         el.rel = 'noopener';
+        el.setAttribute('role', 'menuitem');
+        el.onkeydown = e => handleMenuKey(e, el);
       }
       panel.appendChild(el);
     }
