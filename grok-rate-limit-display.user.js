@@ -425,6 +425,23 @@
         this.update();
         this.checkGrok3();
       }, 300);
+
+      // Bolt: Optimized observer scope
+      // By default observe the whole queryBar
+      let targetToObserve = queryBar;
+
+      // Try to narrow down to bottomBar if it contains model button but NOT the input
+      // This prevents high-frequency input mutations (typing) from triggering the observer
+      const bottomBar = queryBar.querySelector(CONFIG.SELECTORS.bottomBar);
+      const modelButton = queryBar.querySelector(CONFIG.SELECTORS.modelButton);
+      const input = queryBar.querySelector(CONFIG.SELECTORS.input);
+
+      if (bottomBar && modelButton && bottomBar.contains(modelButton)) {
+         // Only switch if input is NOT inside bottomBar
+         if (!input || !bottomBar.contains(input)) {
+             targetToObserve = bottomBar;
+         }
+      }
       
       this.observers.model = new MutationObserver((mutations) => {
         const shouldUpdate = mutations.some(m => {
@@ -433,10 +450,9 @@
         });
         if (shouldUpdate) debouncedUpdate();
       });
-      this.observers.model.observe(queryBar, { childList: true, subtree: true, attributes: true, characterData: true });
+      this.observers.model.observe(targetToObserve, { childList: true, subtree: true, attributes: true, characterData: true });
 
       // Input listener for submit
-      const input = queryBar.querySelector(CONFIG.SELECTORS.input);
       if (input) {
         input.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && setTimeout(() => this.update(true), 3000));
       }
