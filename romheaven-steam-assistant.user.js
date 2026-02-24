@@ -238,6 +238,8 @@
         if (cls.includes('secondary')) {
           el.target = '_blank';
           el.rel = 'noopener noreferrer';
+        } else {
+          el.rel = 'noopener';
         }
       }
       if (onClick) el.onclick = onClick;
@@ -264,7 +266,7 @@
       btn.download = '';
 
       // Pixeldrain
-      if (pixeldrain) {
+      if (pixeldrain && /^[a-zA-Z0-9]{8,16}$/.test(pixeldrain)) {
         RomheavenService.getPixeldrainInfo(pixeldrain).then(alive => {
           if (alive) this.createBtn('🔗 Pixeldrain', 'rh-btn-secondary', `https://pixeldrain.com/u/${pixeldrain}`);
         });
