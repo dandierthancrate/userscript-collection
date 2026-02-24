@@ -28,6 +28,7 @@
 
   const CONFIG = {
     FILE_ID: '97debf09-1ae1-46e0-9a6e-e7650b19e6c1',
+    OWNER_ADDRESS: 'jSf-_OY4nlHhfPfr3k0wuxgB0DqzQU-vBlmTXp3gr98',
     GATEWAYS: ['https://arweave.net', 'https://ar-io.net', 'https://g8way.io'],
     ENDPOINTS: {
       STEAMCMD: 'https://api.steamcmd.net/v1/info',
@@ -129,7 +130,7 @@
 
   class RomheavenService {
     static async getMetadata() {
-      const query = `{transactions(tags:[{name:"File-Id",values:["${CONFIG.FILE_ID}"]}],sort:HEIGHT_DESC,first:1){edges{node{id}}}}`;
+      const query = `{transactions(tags:[{name:"File-Id",values:["${CONFIG.FILE_ID}"]}],owners:["${CONFIG.OWNER_ADDRESS}"],sort:HEIGHT_DESC,first:1){edges{node{id}}}}`;
       const res = await GatewayManager.fetch(gw => `${gw}/graphql`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
