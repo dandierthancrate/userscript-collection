@@ -636,7 +636,8 @@ function getBaseTitle(baseTitle) {
 }
 
 const awaitLoadOf = (() => {
-  let interval = null;
+  let observer = null;
+  let timer = null;
   const listeners = new Set();
 
   function check() {
@@ -647,10 +648,25 @@ const awaitLoadOf = (() => {
         listeners.delete(listener);
       }
     }
-    if (listeners.size === 0 && interval) {
-      clearInterval(interval);
-      interval = null;
+    if (listeners.size === 0) {
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
     }
+  }
+
+  // Bolt: Debounce mutations to prevent UI jank during rapid DOM updates
+  function onMutation() {
+    if (timer) return;
+    timer = setTimeout(() => {
+      timer = null;
+      check();
+    }, 20); // 20ms debounce (approx 1 frame)
   }
 
   return (selector, loadType, input) =>
@@ -678,10 +694,12 @@ const awaitLoadOf = (() => {
       const listener = { match: matchSelector, resolve };
       listeners.add(listener);
 
-      if (!interval) {
-        // Bolt: Optimized element detection using Polling (200ms) instead of global MutationObserver
-        // This removes O(N) overhead on every DOM mutation during page load/hydration.
-        interval = setInterval(check, 200);
+      if (!observer) {
+        // Bolt: Optimized element detection using MutationObserver for immediate reaction
+        observer = new MutationObserver(onMutation);
+        // Robustness: Handle rare case where body is missing (e.g. run-at document-start)
+        const target = document.body || document.documentElement || document;
+        observer.observe(target, { childList: true, subtree: true });
       }
     });
 })();
