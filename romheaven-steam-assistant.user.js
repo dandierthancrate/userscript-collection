@@ -264,7 +264,7 @@
       btn.download = '';
 
       // Pixeldrain
-      if (pixeldrain) {
+      if (pixeldrain && typeof pixeldrain === 'string' && /^[a-zA-Z0-9]{8,16}$/.test(pixeldrain)) {
         RomheavenService.getPixeldrainInfo(pixeldrain).then(alive => {
           if (alive) this.createBtn('🔗 Pixeldrain', 'rh-btn-secondary', `https://pixeldrain.com/u/${pixeldrain}`);
         });
