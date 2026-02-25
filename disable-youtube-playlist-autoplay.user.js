@@ -21,7 +21,7 @@
   const isPlaylist = () => location.search.includes('list=');
   const getPlayer = () => document.querySelector('#movie_player');
 
-  const hookPlayer = player => {
+  const hookPlayer = (player = getPlayer()) => {
     if (!player || player._noAutoAdvance) return;
     player._noAutoAdvance = true;
 
@@ -49,8 +49,7 @@
     });
   };
 
-  const hookPlaylistManager = () => {
-    const ypm = document.querySelector('yt-playlist-manager');
+  const hookPlaylistManager = (ypm = document.querySelector('yt-playlist-manager')) => {
     if (!ypm || ypm._noAutoAdvance) return;
     ypm._noAutoAdvance = true;
 
@@ -66,8 +65,7 @@
     if (ypm.polymerController) freeze(ypm.polymerController, 'canAutoAdvance_');
   };
 
-  const bindVideoEnd = () => {
-    const video = document.querySelector('video.html5-main-video');
+  const bindVideoEnd = (video = document.querySelector('video.html5-main-video')) => {
     if (!video || video._noAutoAdvance) return;
     video._noAutoAdvance = true;
 
@@ -90,13 +88,37 @@
   };
 
   const init = () => {
-    hookPlayer(getPlayer());
+    hookPlayer();
     hookPlaylistManager();
     bindVideoEnd();
   };
 
+  const addAnimationObserver = () => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes playlistAutoplayNodeInserted { from { opacity: 0.99; } to { opacity: 1; } }
+      #movie_player, yt-playlist-manager, video.html5-main-video {
+        animation-duration: 0.001s;
+        animation-name: playlistAutoplayNodeInserted;
+      }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+
+    document.addEventListener('animationstart', (e) => {
+      if (e.animationName !== 'playlistAutoplayNodeInserted') return;
+      const target = e.target;
+      if (!target) return;
+
+      if (target.matches('#movie_player')) hookPlayer(target);
+      if (target.matches('yt-playlist-manager')) hookPlaylistManager(target);
+      if (target.matches('video.html5-main-video')) bindVideoEnd(target);
+    });
+  };
+
   trackUserAction();
   document.addEventListener('yt-navigate-finish', init);
-  new MutationObserver(init).observe(document.body, { childList: true, subtree: true });
+
+  // Optimization: Use CSS Animation Observer instead of global MutationObserver (O(1) vs O(N))
+  addAnimationObserver();
   init();
 })();
