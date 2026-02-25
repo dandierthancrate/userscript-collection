@@ -149,6 +149,20 @@ if (typeof GM_registerMenuCommand !== 'undefined') {
         if (conf.maxLength) input.maxLength = conf.maxLength;
         input.value = settings[conf.key];
         input.style.width = '100%';
+
+        if (conf.key === 'hotkey_key_setting') {
+          const validate = () => {
+            if (input.value && !InputValidator.isValidHotkey(input.value)) {
+              input.style.borderColor = 'red';
+              input.title = 'Single letter or number only';
+            } else {
+              input.style.borderColor = '';
+              input.title = '';
+            }
+          };
+          input.addEventListener('input', validate);
+          validate();
+        }
       }
       input.id = `nl-setting-${conf.key}`;
     });
@@ -528,6 +542,8 @@ function setupHotkey(ctx) {
     // The hotkey_key_setting is already validated in Storage.load()/save()
     if (hotkeyListener) document.removeEventListener('keydown', hotkeyListener);
     hotkeyListener = e => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+
         const mod = settings.hotkey_modifier_setting;
         const match = mod ? e[mod] : !e.ctrlKey && !e.shiftKey && !e.altKey;
         // Security: Re-validate hotkey at runtime (defense in depth)
