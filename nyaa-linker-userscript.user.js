@@ -451,9 +451,10 @@ function handleMB(detail, cardType, cat) {
     mbHandled.add(`${detail.element_id}|${titleJap}`);
 
     container.querySelectorAll('.nyaaBtn').forEach(e => e.remove());
-    const btn = createBtn(container, { cat });
+    const btn = createBtn(container, { cat, title: 'Search on Nyaa' });
     const px = ['list_dense', 'grid_dense'].includes(detail.list_config?.mode) ? { h: 'h-8', w: '58px' } : { h: 'h-10', w: '66px' };
     btn.classList.add('bg-secondary', 'hover:bg-secondary/80', 'inline-flex', 'items-center', 'justify-center', 'rounded-md', px.h);
+    btn.setAttribute('aria-label', 'Search on Nyaa');
     const img = btn.appendChild(document.createElement('img'));
     img.className = 'size-5';
     img.src = 'https://i.imgur.com/9Fr2BRG.png';
