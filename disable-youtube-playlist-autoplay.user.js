@@ -97,6 +97,8 @@
 
   trackUserAction();
   document.addEventListener('yt-navigate-finish', init);
-  new MutationObserver(init).observe(document.body, { childList: true, subtree: true });
+
+  // Optimization: Use polling instead of global MutationObserver (subtree: true) on high-frequency sites
+  setInterval(init, 500);
   init();
 })();
