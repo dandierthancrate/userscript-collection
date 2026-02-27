@@ -265,9 +265,14 @@
 
       // Pixeldrain
       if (pixeldrain) {
-        RomheavenService.getPixeldrainInfo(pixeldrain).then(alive => {
-          if (alive) this.createBtn('🔗 Pixeldrain', 'rh-btn-secondary', `https://pixeldrain.com/u/${pixeldrain}`);
-        });
+        // Security: Validate ID format (alphanumeric, 8-16 chars)
+        if (!/^[a-zA-Z0-9]{8,16}$/.test(pixeldrain)) {
+          console.warn('[Romheaven] Invalid Pixeldrain ID blocked:', pixeldrain);
+        } else {
+          RomheavenService.getPixeldrainInfo(pixeldrain).then(alive => {
+            if (alive) this.createBtn('🔗 Pixeldrain', 'rh-btn-secondary', `https://pixeldrain.com/u/${pixeldrain}`);
+          });
+        }
       }
 
       // Version Check
