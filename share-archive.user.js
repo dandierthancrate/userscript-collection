@@ -236,12 +236,19 @@
 
         compilePatterns() {
             if (!this.rules?.providers) return;
+            // Bolt: Optimize startup by only compiling the URL matcher regex initially.
+            // The specific rules/redirections/exceptions are compiled lazily only when a URL matches.
             for (const p of Object.values(this.rules.providers)) {
                 try { p._urlPattern = new RegExp(p.urlPattern); } catch { /* skip */ }
-                if (p.rules) p._rules = p.rules.map(r => { try { return new RegExp(r, 'g'); } catch { return null; } }).filter(Boolean);
-                if (p.redirections) p._redirections = p.redirections.map(r => { try { return new RegExp(r); } catch { return null; } }).filter(Boolean);
-                if (p.exceptions) p._exceptions = p.exceptions.map(e => { try { return new RegExp(e); } catch { return null; } }).filter(Boolean);
             }
+        },
+
+        ensureProviderCompiled(p) {
+            if (p._compiled) return;
+            if (p.rules) p._rules = p.rules.map(r => { try { return new RegExp(r, 'g'); } catch { return null; } }).filter(Boolean);
+            if (p.redirections) p._redirections = p.redirections.map(r => { try { return new RegExp(r); } catch { return null; } }).filter(Boolean);
+            if (p.exceptions) p._exceptions = p.exceptions.map(e => { try { return new RegExp(e); } catch { return null; } }).filter(Boolean);
+            p._compiled = true;
         },
 
         updateRules() {
@@ -305,6 +312,9 @@
         try {
             for (const provider of Object.values(RulesManager.rules.providers)) {
                 if (!provider._urlPattern?.test(cleanedUrl)) continue;
+                // Bolt: Lazy-compile rules only for matching providers
+                RulesManager.ensureProviderCompiled(provider);
+
                 if (hasException(provider, url)) continue;
                 cleanedUrl = applyRedirections(provider, cleanedUrl);
                 cleanedUrl = applyRawRules(provider, cleanedUrl);

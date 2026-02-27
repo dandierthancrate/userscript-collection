@@ -63,18 +63,33 @@
 
   const Utils = {
     gmFetch: (url, opts = {}) => new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
+      let abortHandler;
+      const cleanup = () => {
+        if (opts.signal && abortHandler) {
+          opts.signal.removeEventListener('abort', abortHandler);
+        }
+      };
+
+      const req = GM_xmlhttpRequest({
         method: opts.method || 'GET',
         url,
         headers: opts.headers || {},
         data: opts.body,
         responseType: opts.responseType || 'text',
-        onload: res => (res.status >= 200 && res.status < 300) 
-          ? resolve(opts.json ? JSON.parse(res.responseText) : res)
-          : reject(new Error(`HTTP ${res.status}`)),
-        onerror: () => reject(new Error('Network error')),
-        ontimeout: () => reject(new Error('Timeout'))
+        onload: res => {
+          cleanup();
+          (res.status >= 200 && res.status < 300)
+            ? resolve(opts.json ? JSON.parse(res.responseText) : res)
+            : reject(new Error(`HTTP ${res.status}`));
+        },
+        onerror: () => { cleanup(); reject(new Error('Network error')); },
+        ontimeout: () => { cleanup(); reject(new Error('Timeout')); }
       });
+
+      if (opts.signal) {
+        abortHandler = () => req.abort();
+        opts.signal.addEventListener('abort', abortHandler);
+      }
     }),
     
     decompress: async (buffer) => {
@@ -105,12 +120,17 @@
       }
 
       // 2. Race all gateways to find the fastest
+      const controller = new AbortController();
+      const raceOpts = { ...opts, signal: controller.signal };
+
       const promises = CONFIG.GATEWAYS.map(gw =>
-        Utils.gmFetch(pathFn(gw), opts).then(res => ({ gw, res }))
+        Utils.gmFetch(pathFn(gw), raceOpts).then(res => ({ gw, res }))
       );
 
       try {
         const { gw, res } = await Promise.any(promises);
+        // Bolt: Optimize bandwidth by aborting redundant gateway requests once a winner is found
+        controller.abort();
         this.activeGateway = gw; // Remember winner
         return res;
       } catch (aggregateError) {
