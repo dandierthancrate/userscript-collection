@@ -18,10 +18,10 @@
 
   const STYLES = `
     .sld-wrap{display:inline-block;position:relative;margin-right:4px;vertical-align:top}
-    .sld-panel{position:absolute;display:none;min-width:140px;background:#171d25;border:1px solid #000;border-radius:3px;box-shadow:0 0 12px rgba(0,0,0,.7);z-index:1501}
-    .sld-panel.show{display:block}
-    .sld-panel a{display:block;padding:6px 12px;color:#c7d5e0;text-decoration:none;font-size:13px;white-space:nowrap}
-    .sld-panel a:hover{background:#c7d5e0;color:#1b2838;border-radius:2px}
+    .sld-panel{position:absolute;top:0;left:0;visibility:hidden;opacity:0;min-width:140px;background:#171d25;border:1px solid #000;border-radius:3px;box-shadow:0 0 12px rgba(0,0,0,.7);z-index:1501;transition:opacity 0.1s ease-out, visibility 0.1s}
+    .sld-panel.show{visibility:visible;opacity:1}
+    .sld-panel a{display:block;padding:6px 12px;color:#c7d5e0;text-decoration:none;font-size:13px;white-space:nowrap;outline:none}
+    .sld-panel a:hover,.sld-panel a:focus{background:#c7d5e0;color:#1b2838;border-radius:2px}
     .sld-header{padding:6px 12px 4px;color:#5b9ace;font-weight:bold;font-size:11px;text-transform:uppercase;border-top:1px solid #3a3f44}
     .sld-header:first-child{border-top:none}
     @keyframes sld-node-inserted { from { opacity: 0.99; } to { opacity: 1; } }
@@ -101,6 +101,9 @@
         if (!activeDropdown || activeDropdown.btn !== btn) btn.click();
         const first = panel.querySelector('[role="menuitem"]');
         if (first) setTimeout(() => first.focus(), 0);
+      } else if (e.key === 'Escape' && activeDropdown && activeDropdown.btn === btn) {
+        e.preventDefault();
+        btn.click();
       }
     };
 
