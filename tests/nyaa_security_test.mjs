@@ -36,6 +36,7 @@ const code = fs.readFileSync('nyaa-linker-userscript.user.js', 'utf8');
 const createSearchBody = extractFunction(code, 'createSearch');
 
 // Create the function dynamically
+// eslint-disable-next-line no-new-func
 const createSearch = new Function('btn', 'query', 'settings', createSearchBody);
 
 // Test Setup

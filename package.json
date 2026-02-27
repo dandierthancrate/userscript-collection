@@ -1,5 +1,26 @@
 {
+	"name": "userscript-collection",
+	"version": "1.0.0",
+	"description": "Collection of userscripts for various websites",
+	"scripts": {
+		"test": "node --test tests/**/*.js tests/**/*.mjs",
+		"test:coverage": "node --test --experimental-test-coverage tests/**/*.js tests/**/*.mjs",
+		"lint": "eslint . --ext .js,.mjs",
+		"lint:fix": "eslint . --ext .js,.mjs --fix",
+		"format": "prettier --write \"**/*.{js,mjs,json,md}\"",
+		"format:check": "prettier --check \"**/*.{js,mjs,json,md}\""
+	},
 	"dependencies": {
 		"playwright": "^1.58.2"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.18.0",
+		"eslint": "^9.18.0",
+		"globals": "^15.14.0",
+		"jsdom": "^26.0.0",
+		"prettier": "^3.4.2"
+	},
+	"engines": {
+		"node": ">=18.0.0"
 	}
 }

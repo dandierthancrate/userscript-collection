@@ -463,13 +463,97 @@ Observer Layer → processLyricElement() → Cache Check → Queue
 
 | Script | Test File | Coverage |
 |---|---|---|
-| `spotify-llm` | `test_spotify_llm_cache.js` | Cache layer (normalize, comparison, hash, TTL) |
-| `nyaa-linker` | `test_nyaa_linker_optimization.js` | Title normalization, query strategies |
-| `share-archive` | `share-archive.security.test.js` | Protocol validation (XSS prevention) |
-| `romheaven-steam` | `romheaven_security_test.js` | Gateway failover, decompression |
-| `grok-rate-limit` | `test_grok_rate_limit.js` | UI rendering, API parsing |
-| `enable-copy` | `test_enable_copy_perf.js` | Event blocking, mode switching |
-| `steam-links-dropdowns` | `test_steam_links_perf.js` | CSS animation detection |
+| `spotify-llm` | `test_spotify_llm_cache.js`, `test_spotify_llm_optimization.js`, `test_spotify_llm_security.js`, `test_spotify_llm_status.js`, `test_spotify_llm_validation.js` | Cache layer, TTL, normalization, security, validation |
+| `nyaa-linker` | `test_nyaa_linker_optimization.js`, `test_nyaa_linker_repro.js`, `test_nyaa_linker_settings_a11y.js`, `test_nyaa_input_validator.js`, `test_nyaa_hotkey_ignore_input.js` | Title normalization, query strategies, input validation, accessibility |
+| `share-archive` | `share-archive.security.test.js` | Protocol validation, mirror ranking, ClearURLs integration |
+| `romheaven-steam` | `romheaven_security_test.js`, `romheaven_ux_test.js`, `test_romheaven_gateway.js`, `test_romheaven_owner_check.js` | Gateway failover, decompression, ownership checks |
+| `grok-rate-limit` | `test_grok_rate_limit.js`, `test_grok_optimization.js` | UI rendering, API parsing, caching |
+| `enable-copy` | `test_enable_copy_perf.js` | Event blocking, mode switching, performance |
+| `steam-links-dropdowns` | `test_steam_links_perf.js`, `test_steam_links_a11y.js`, `test_steam_links_menu_nav.js`, `test_steam_links_security.js` | CSS animation detection, accessibility, navigation, security |
+| `youtube-autoplay` | `test_youtube_autoplay_perf.js`, `test_youtube_playlist_optimization.js` | Autoplay prevention, performance |
+| `utils` (shared) | `test_utils.js` | Storage, TTL cache, observers, DOM helpers, input validation |
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js >= 18.0.0
+- npm or pnpm
+
+### Installation
+
+```bash
+npm install
+```
+
+### Available Scripts
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Lint all files (ScriptCat-optimized rules)
+npm run lint
+
+# Auto-fix lint issues
+npm run lint:fix
+
+# Format all files with Prettier
+npm run format
+
+# Check formatting without fixing
+npm run format:check
+```
+
+### Shared Utilities
+
+A shared utility module is available at `src/utils.js` with the following exports:
+
+| Function | Description |
+|---|---|
+| `createStorage(prefix, options)` | Typed storage wrapper with memory caching and TTL |
+| `createTTLCache(options)` | TTL-based cache with LRU eviction and capacity limits |
+| `createThrottledObserver(callback, options)` | Throttled MutationObserver with SPA navigation support |
+| `createLazyObserver(callback, options)` | IntersectionObserver for lazy-loading elements |
+| `injectCSS(css, id)` | Safely inject CSS into the page |
+| `createElement(tag, props, children)` | Create elements with attributes and children |
+| `waitForElement(selector, options)` | Wait for element with timeout |
+| `sanitizeHTML(html)` | Escape HTML to prevent XSS |
+| `InputValidator` | Input validation helpers (hotkeys, hostnames, text sanitization) |
+
+#### Example Usage
+
+```javascript
+import { createStorage, createTTLCache, createElement } from './src/utils.js';
+
+// Storage with 5-second cache
+const storage = createStorage('myscript_', { useCache: true, cacheTTL: 5000 });
+storage.set('key', 'value');
+const val = storage.get('key', 'default');
+
+// TTL cache with 1-hour expiration
+const cache = createTTLCache({ maxSize: 2000, defaultTTL: 3600000 });
+cache.set('lyric_hash', { translation: '...' });
+const cached = cache.get('lyric_hash');
+
+// Throttled observer
+const observer = createThrottledObserver(
+    (mutations) => { /* handle mutations */ },
+    { throttleMs: 300, onNavigate: (oldPath, newPath) => { /* SPA nav */ } }
+);
+observer.observe(document.body);
+
+// Safe element creation
+const btn = createElement('button', {
+    className: 'rh-btn',
+    textContent: 'Download',
+    style: { color: 'white', backgroundColor: 'blue' },
+    onClick: () => { /* handler */ }
+}, [createElement('span', { textContent: 'icon' })]);
+```
 
 ## Performance Guidelines
 
