@@ -214,6 +214,22 @@ function runRemainingTests() {
         console.log('PASS: Focus returned to button');
     }
 
+    // 8. Check Escape on Button closes menu (New Feature)
+    btn.click(); // Open menu
+    if (btn.getAttribute('aria-expanded') !== 'true') {
+        console.log('FAIL: Failed to reopen menu for test 8');
+        process.exit(1);
+    }
+    btn.focus(); // Ensure focus on button
+    btn.dispatchEvent({ type: 'keydown', key: 'Escape', preventDefault: () => {} });
+
+    if (btn.getAttribute('aria-expanded') !== 'false') {
+        console.log('FAIL: Escape on button did not close menu');
+        process.exit(1);
+    } else {
+        console.log('PASS: Escape on button closed menu');
+    }
+
     console.log('ALL MENU NAV TESTS PASSED');
     process.exit(0);
 }
