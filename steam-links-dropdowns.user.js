@@ -7,7 +7,6 @@
 // @match        https://store.steampowered.com/app/*
 // @icon         https://store.steampowered.com/favicon.ico
 // @grant        GM_addStyle
-// @license      GPL-3.0-or-later
 // @run-at       document-idle
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/steam-links-dropdowns.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/steam-links-dropdowns.user.js

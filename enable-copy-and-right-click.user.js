@@ -9,7 +9,6 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @run-at       document-start
-// @license      GPL-3.0-or-later
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/enable-copy-and-right-click.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/enable-copy-and-right-click.user.js
 // ==/UserScript==

@@ -20,7 +20,6 @@ userscript-collection/
 ├── disable-youtube-playlist-autoplay.user.js 103 LOC v1.0.12
 ├── disable-youtube-channel-autoplay.user.js   41 LOC  v1.0.12
 ├── README.md
-├── LICENSE                                   GPL-3.0-or-later
 └── AGENTS.md                                 (this file)
 ```
 
@@ -241,12 +240,11 @@ Cache save is throttled: `GM_setValue` is called at most once per 10 seconds (or
 All scripts follow this exact header order:
 ```
 @name → @namespace → @version → @description → @author → @match → @exclude (if any)
-→ @icon (if any) → @grant → @connect (if any) → @run-at (if any) → @license
+→ @icon (if any) → @grant → @connect (if any) → @run-at (if any)
 → @updateURL → @downloadURL
 ```
 
 - `@namespace` is always `https://github.com/dandierthancrate/userscript-collection`
-- `@license` is always `GPL-3.0-or-later`
 - `@updateURL` / `@downloadURL` point to `raw.githubusercontent.com/.../main/<filename>`
 
 ---

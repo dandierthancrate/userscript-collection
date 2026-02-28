@@ -19,7 +19,6 @@
 // @connect      archive.li
 // @connect      archive.md
 // @run-at       document-start
-// @license      GPL-3.0-or-later
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/share-archive.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/share-archive.user.js
 // ==/UserScript==

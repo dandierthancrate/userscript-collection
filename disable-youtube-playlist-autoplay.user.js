@@ -7,7 +7,6 @@
 // @match        https://www.youtube.com/*
 // @exclude      https://www.youtube.com/embed/*
 // @run-at       document-idle
-// @license      GPL-3.0-or-later
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-playlist-autoplay.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/disable-youtube-playlist-autoplay.user.js
 // ==/UserScript==

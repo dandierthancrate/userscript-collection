@@ -14,7 +14,6 @@
 // @connect      api.steamcmd.net
 // @connect      pixeldrain.com
 // @connect      dl.romheaven.com
-// @license      GPL-3.0-or-later
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/romheaven-steam-assistant.user.js
 // ==/UserScript==

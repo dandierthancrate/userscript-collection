@@ -13,7 +13,6 @@
 // @grant        GM_info
 // @connect      api.cerebras.ai
 // @connect      api.groq.com
-// @license      GPL-3.0-or-later
 // @updateURL    https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm.user.js
 // @downloadURL  https://raw.githubusercontent.com/dandierthancrate/userscript-collection/main/spotify-llm.user.js
 // ==/UserScript==

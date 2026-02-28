@@ -2,7 +2,6 @@
  * @fileoverview Shared utilities for ScriptCat userscripts
  * @description Common patterns: Storage, Caching with TTL, Observers, DOM helpers
  * @version 1.0.0
- * @license GPL-3.0-or-later
  */
 
 // ============================================================================
