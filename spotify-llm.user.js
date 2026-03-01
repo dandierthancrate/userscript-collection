@@ -455,7 +455,7 @@ CHINESE LINGUISTICS (APPLY THESE RULES):
     updateCssVariables();
 
     function updateStatus(msg, isVisible = true, isError = false, isCached = false) {
-        statusEl.innerHTML = '';
+        statusEl.textContent = '';
         if (isVisible && !isError && !isCached && msg.startsWith('Translating')) {
             const spinner = document.createElement('span');
             spinner.className = 'llm-spinner';
