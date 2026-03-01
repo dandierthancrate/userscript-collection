@@ -412,7 +412,10 @@ const SITES = [
                      sel[0] = '.anime'; sel[1] = '.related-links';
                  }
                  document.querySelectorAll(sel[0]).forEach(card => {
-                     const btn = createBtn(card.querySelector(sel[1]), { cat: setCategory(settings.category_setting, 'anime') });
+                     const btn = createBtn(card.querySelector(sel[1]), {
+                         cat: setCategory(settings.category_setting, 'anime'),
+                         title: 'Search on Nyaa'
+                     });
                      Object.assign(btn.style, { background: 'url(https://i.imgur.com/9Fr2BRG.png) center/20px no-repeat', padding: '15px', margin: '0' });
                      btn.classList.add('action-button');
                      createSearch(btn, getQuery(card.getAttribute('data-romaji'), card.getAttribute('data-english'), settings.query_setting), settings);
@@ -471,6 +474,7 @@ function handleMB(detail, cardType, cat) {
     const img = btn.appendChild(document.createElement('img'));
     img.className = 'size-5';
     img.src = 'https://i.imgur.com/9Fr2BRG.png';
+    img.alt = '';
     createSearch(btn, getQuery(titleJap, titleEng, settings.query_setting), settings);
 }
 
@@ -497,7 +501,10 @@ function createBtn(parent, { cat = '1_2', spicy = false, title = '' } = {}) {
     
     const btn = parent.appendChild(document.createElement('a'));
     btn.className = 'nyaaBtn';
-    if (title) btn.title = title;
+    if (title) {
+        btn.title = title;
+        btn.setAttribute('aria-label', title);
+    }
     
     if (settings.hide_button_setting) btn.style.display = 'none';
     if (settings.hotkey_key_setting) setupHotkey({ cat, spicy });
