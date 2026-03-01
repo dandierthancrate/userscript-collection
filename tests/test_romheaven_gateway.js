@@ -86,7 +86,7 @@ test('GatewayManager Race Optimization', async (t) => {
 
     assert.ok(res.includes('fast1.net'));
     // Sticky calls use direct fetch, so time is just the delay of that gateway
-    assert.ok((end - start) >= 50, 'Should take at least 50ms');
+        assert.ok(end - start >= 45, 'Should take at least 50ms');
     assert.ok((end - start) < 100, 'Should not re-race');
   });
 

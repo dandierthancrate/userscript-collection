@@ -76,6 +76,17 @@ class MockElement {
             return `<${c.tagName.toLowerCase()} class="${c.className}"></${c.tagName.toLowerCase()}>`;
         }).join('');
     }
+
+    set textContent(text) {
+        if (!text) {
+            this.children = [];
+        }
+        this._textContent = text;
+    }
+
+    get textContent() {
+        return this._textContent || '';
+    }
 }
 
 const document = {
@@ -111,7 +122,7 @@ let scriptContent = fs.readFileSync(path.join(__dirname, '../spotify-llm.user.js
 
 // Inject hook to access updateStatus
 // We replace the IIFE closing with an assignment to global
-scriptContent = scriptContent.replace(/\}\)\(\);$/, 'global.test_updateStatus = updateStatus; })();');
+scriptContent = scriptContent.replace(/\}\)\(\);[\s\n]*$/, 'global.test_updateStatus = updateStatus; })();');
 
 // Run script
 vm.runInThisContext(scriptContent);

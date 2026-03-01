@@ -247,7 +247,23 @@
       this.container.type = 'button';
       this.container.setAttribute('aria-label', 'Refresh rate limit status');
       this.container.id = 'grok-rate-limit';
-      this.container.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg><div class="flex items-center"></div>';
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '18');
+      svg.setAttribute('height', '18');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('stroke-width', '2');
+      svg.setAttribute('stroke-linecap', 'round');
+      svg.setAttribute('stroke-linejoin', 'round');
+
+      const div = document.createElement('div');
+      div.className = 'flex items-center';
+
+      this.container.appendChild(svg);
+      this.container.appendChild(div);
+
       this.container.className = 'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-60 disabled:cursor-not-allowed [&_svg]:duration-100 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:-mx-0.5 select-none text-fg-primary hover:bg-button-ghost-hover hover:border-border-l2 disabled:hover:bg-transparent h-10 px-3.5 py-2 text-sm rounded-full group/rate-limit transition-colors duration-100 relative overflow-hidden border border-transparent cursor-pointer';
       Object.assign(this.container.style, { opacity: '0.8', transition: 'opacity 0.1s ease-in-out', zIndex: '20' });
       
@@ -267,7 +283,7 @@
 
       const content = container.lastChild;
       const svg = container.firstChild;
-      content.innerHTML = '';
+      content.textContent = '';
 
       if (data.error) this.renderError(content, svg, data, effort);
       else this.renderData(content, svg, data, effort);
